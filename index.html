@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Null Rail — songs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body, #root { margin: 0; padding: 0; }
+    html, body {
+      background: #0f172a;
+      color: #d1d5db;
+      font-family: "Roboto", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    a { color: #3b82f6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Bouncing bars animation used by PlayingBars */
+    @keyframes nr-bar {
+      0%   { transform: scaleY(0.35); }
+      100% { transform: scaleY(1.0); }
+    }
+    @keyframes nr-spin {
+      to { transform: rotate(360deg); }
+    }
+    /* Focus ring per Rainfall convention */
+    button:focus-visible, a:focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+  </style>
+
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="site-chrome.jsx"></script>
+  <script type="text/babel" src="song-lockup.jsx"></script>
+  <script type="text/babel" src="songs-data.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
