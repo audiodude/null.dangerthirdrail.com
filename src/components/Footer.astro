@@ -1,0 +1,53 @@
+---
+interface Props {
+  artist?: string;
+}
+
+const { artist = 'Null Rail' } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div>
+      <span>© {year} {artist}.</span>
+      <span class="site-footer__built">
+        Built with <em>Rainfall</em>. <a href="#">Source</a>.
+      </span>
+    </div>
+    <div class="site-footer__links">
+      <a href="#">Mastodon</a>
+      <a href="#">Bandcamp</a>
+      <a href="#">RSS</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: #1f2937;
+    color: #9ca3af;
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
+    margin-top: 80px;
+  }
+  .site-footer__inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .site-footer__built {
+    margin-left: 12px;
+  }
+  .site-footer__links {
+    display: flex;
+    gap: 16px;
+  }
+  .site-footer a {
+    color: #3b82f6;
+  }
+</style>

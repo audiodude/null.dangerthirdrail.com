@@ -1,0 +1,82 @@
+---
+interface Props {
+  artist?: string;
+  currentTab?: 'songs' | 'about' | 'rss';
+}
+
+const { artist = 'Null Rail', currentTab = 'songs' } = Astro.props;
+const tabs: Array<'songs' | 'about' | 'rss'> = ['songs', 'about', 'rss'];
+---
+
+<nav class="site-nav">
+  <div class="site-nav__inner">
+    <a href="/" class="site-nav__brand">
+      <img src="/rainfall-logo.svg" width="36" height="36" alt="" />
+      <span>{artist}</span>
+    </a>
+    <ul class="site-nav__tabs">
+      {
+        tabs.map((tab) => (
+          <li>
+            <a
+              href="#"
+              class:list={['site-nav__tab', { 'is-active': currentTab === tab }]}
+            >
+              {tab === 'rss' ? 'RSS' : tab}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .site-nav {
+    background: #1f2937;
+    border-bottom: 1px solid #111827;
+    font-family: 'Roboto', sans-serif;
+  }
+  .site-nav__inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .site-nav__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .site-nav__tabs {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .site-nav__tab {
+    color: #9ca3af;
+    text-decoration: none;
+    text-transform: capitalize;
+    cursor: pointer;
+    transition: color 120ms ease;
+  }
+  .site-nav__tab.is-active {
+    color: #fff;
+  }
+  .site-nav__tab:hover {
+    color: #3b82f6;
+    text-decoration: none;
+  }
+</style>

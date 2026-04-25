@@ -1,0 +1,120 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SongLockup, { type SongData } from '../components/SongLockup';
+
+const songs = await getCollection('songs');
+const sorted = songs.sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+const lockupData: SongData[] = sorted.map((entry) => ({
+  id: entry.id,
+  title: entry.data.title,
+  date: entry.data.date.toISOString().slice(0, 10),
+  duration: entry.data.duration,
+  tags: entry.data.tags,
+  audio: entry.data.audio,
+  description: entry.data.description,
+  lyric: entry.data.lyric,
+  cover: entry.data.cover,
+}));
+---
+
+<Layout title="Null Rail — songs">
+  <div class="page">
+    <Header artist="Null Rail" currentTab="songs" />
+
+    <main class="main">
+      <header class="hero">
+        <div class="hero__badge">
+          <svg width="10" height="10" viewBox="0 0 20 14" fill="currentColor" aria-hidden="true">
+            <path
+              d="M11 0H2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm8.585 1.189a.994.994 0 0 0-.9-.138l-2.965.983a1 1 0 0 0-.685.949v8a1 1 0 0 0 .675.946l2.965 1.02a1.013 1.013 0 0 0 1.032-.242A1 1 0 0 0 20 12V2a1 1 0 0 0-.415-.811Z"
+            />
+          </svg>
+          Songs, posted as I finish them
+        </div>
+        <h1 class="hero__title">Field notes, but they're songs.</h1>
+        <p class="hero__lede">
+          I'm a developer who makes music in the gaps. I've been posting tracks here
+          instead of putting them on streaming because I wanted somewhere I could write
+          about each one without it feeling like marketing. New posts every couple of
+          weeks. RSS works. Comments don't.
+        </p>
+      </header>
+
+      <div class="feed">
+        {lockupData.map((song) => <SongLockup song={song} client:visible />)}
+      </div>
+
+      <div class="outro">
+        That's everything. <a href="#">Subscribe via RSS</a> for the next one.
+      </div>
+    </main>
+
+    <Footer artist="Null Rail" />
+  </div>
+</Layout>
+
+<style>
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .main {
+    flex: 1;
+    max-width: 960px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 56px 24px 24px;
+  }
+  .hero {
+    margin-bottom: 56px;
+    max-width: 720px;
+  }
+  .hero__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-radius: 8px;
+    background: #374151;
+    color: #60a5fa;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .hero__title {
+    color: #fff;
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 14px;
+  }
+  .hero__lede {
+    font-size: 18px;
+    color: #9ca3af;
+    margin: 0;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  .feed {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .outro {
+    text-align: center;
+    margin-top: 56px;
+    color: #6b7280;
+    font-size: 13px;
+  }
+  .outro a {
+    color: #3b82f6;
+  }
+</style>
