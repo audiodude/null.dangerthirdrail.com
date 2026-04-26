@@ -9,7 +9,6 @@ const songs = defineCollection({
     duration: z.number(),
     tags: z.array(z.string()).default([]),
     audio: z.string().optional(),
-    description: z.string(),
     lyric: z.string().optional(),
     cover: z.enum(['pressure', 'server', 'island', 'trackpad', 'found']),
   }),

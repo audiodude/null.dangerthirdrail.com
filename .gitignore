@@ -6,6 +6,9 @@ dist/
 # dependencies
 node_modules/
 
+# audio masters / mp3s — synced to R2, never committed
+public/songs/
+
 # logs
 npm-debug.log*
 yarn-debug.log*

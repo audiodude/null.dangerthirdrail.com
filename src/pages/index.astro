@@ -5,6 +5,13 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SongLockup, { type SongData } from '../components/SongLockup';
 
+function resolveAudio(value?: string): string | undefined {
+  if (!value) return undefined;
+  if (value.startsWith('http://') || value.startsWith('https://')) return value;
+  if (value.startsWith('/')) return value;
+  return `/songs/${value}`;
+}
+
 const songs = await getCollection('songs');
 const sorted = songs.sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
@@ -16,8 +23,8 @@ const lockupData: SongData[] = sorted.map((entry) => ({
   date: entry.data.date.toISOString().slice(0, 10),
   duration: entry.data.duration,
   tags: entry.data.tags,
-  audio: entry.data.audio,
-  description: entry.data.description,
+  audio: resolveAudio(entry.data.audio),
+  description: (entry.body ?? '').trim(),
   lyric: entry.data.lyric,
   cover: entry.data.cover,
 }));
@@ -25,7 +32,7 @@ const lockupData: SongData[] = sorted.map((entry) => ({
 
 <Layout title="Null Rail — Main Page">
   <div class="page">
-    <Header artist="Null Rail" currentTab="songs" />
+    <Header artist="Null Rail" />
 
     <main class="main">
       <header class="hero">
@@ -48,7 +55,7 @@ const lockupData: SongData[] = sorted.map((entry) => ({
       </div>
 
       <div class="outro">
-        That's everything. <a href="#">Subscribe via RSS</a> for the next one.
+        Yes, it has come to this.
       </div>
     </main>
 

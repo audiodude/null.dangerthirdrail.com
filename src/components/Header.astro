@@ -1,11 +1,9 @@
 ---
 interface Props {
   artist?: string;
-  currentTab?: 'songs' | 'about' | 'rss';
 }
 
-const { artist = 'Null Rail', currentTab = 'songs' } = Astro.props;
-const tabs: Array<'songs' | 'about' | 'rss'> = ['songs', 'about', 'rss'];
+const { artist = 'Null Rail' } = Astro.props;
 ---
 
 <nav class="site-nav">
@@ -13,20 +11,9 @@ const tabs: Array<'songs' | 'about' | 'rss'> = ['songs', 'about', 'rss'];
     <a href="/" class="site-nav__brand">
       <span>{artist}</span>
     </a>
-    <ul class="site-nav__tabs">
-      {
-        tabs.map((tab) => (
-          <li>
-            <a
-              href="#"
-              class:list={['site-nav__tab', { 'is-active': currentTab === tab }]}
-            >
-              {tab === 'rss' ? 'RSS' : tab}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <div class="site-nav__byline">
+      by <a href="https://travisbriggs.com">Travis Briggs</a>
+    </div>
   </div>
 </nav>
 
@@ -55,27 +42,11 @@ const tabs: Array<'songs' | 'about' | 'rss'> = ['songs', 'about', 'rss'];
     font-size: 22px;
     font-weight: 600;
   }
-  .site-nav__tabs {
-    display: flex;
-    gap: 28px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .site-nav__tab {
+  .site-nav__byline {
     color: #9ca3af;
-    text-decoration: none;
-    text-transform: capitalize;
-    cursor: pointer;
-    transition: color 120ms ease;
+    font-size: 14px;
   }
-  .site-nav__tab.is-active {
-    color: #fff;
-  }
-  .site-nav__tab:hover {
+  .site-nav__byline a {
     color: #3b82f6;
-    text-decoration: none;
   }
 </style>

@@ -7,6 +7,7 @@ export default config({
       label: 'Songs',
       slugField: 'title',
       path: 'src/content/songs/*',
+      format: { contentField: 'description' },
       columns: ['title', 'date'],
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
@@ -19,14 +20,14 @@ export default config({
           label: 'Tags',
           itemLabel: (props) => props.value,
         }),
-        audio: fields.file({
-          label: 'MP3',
-          directory: 'public/songs',
-          publicPath: '/songs/',
+        audio: fields.text({
+          label: 'Audio URL or path',
+          description:
+            'Path under /songs/ (e.g. /songs/skin/audio.mp3) or full URL (e.g. https://audio.null.dangerthirdrail.com/skin.mp3 once on R2). Drop the actual file in public/songs/ yourself — this field is just the reference.',
         }),
-        description: fields.text({
+        description: fields.markdoc({
           label: 'Description',
-          multiline: true,
+          extension: 'md',
         }),
         lyric: fields.text({
           label: 'Lyric excerpt',

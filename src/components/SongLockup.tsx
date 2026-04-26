@@ -201,7 +201,7 @@ function ProgressPill({ progress, duration, currentTime, onSeek }: ProgressProps
     onSeek(ratio);
   };
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       <span
         style={{
           fontSize: 12,
@@ -252,12 +252,16 @@ function ProgressPill({ progress, duration, currentTime, onSeek }: ProgressProps
 export default function SongLockup({ song }: { song: SongData }) {
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(song.duration);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const hasAudio = Boolean(song.audio);
 
   // Cross-island singleton: when one song starts, others pause.
   useEffect(() => {
     const handler = (e: Event) => {
       const ce = e as CustomEvent<{ id: string }>;
       if (ce.detail?.id !== song.id) {
+        if (audioRef.current) audioRef.current.pause();
         setPlaying(false);
       }
     };
@@ -265,13 +269,35 @@ export default function SongLockup({ song }: { song: SongData }) {
     return () => window.removeEventListener(PLAY_EVENT, handler);
   }, [song.id]);
 
-  // Faked playback timer (no real audio wired yet).
+  // Real audio: track time/duration/end via <audio> events.
   useEffect(() => {
-    if (!playing) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onTime = () => setCurrentTime(audio.currentTime);
+    const onMeta = () => {
+      if (isFinite(audio.duration)) setDuration(audio.duration);
+    };
+    const onEnded = () => {
+      setPlaying(false);
+      setCurrentTime(0);
+    };
+    audio.addEventListener('timeupdate', onTime);
+    audio.addEventListener('loadedmetadata', onMeta);
+    audio.addEventListener('ended', onEnded);
+    return () => {
+      audio.removeEventListener('timeupdate', onTime);
+      audio.removeEventListener('loadedmetadata', onMeta);
+      audio.removeEventListener('ended', onEnded);
+    };
+  }, []);
+
+  // Faked playback timer — only used when there's no real audio file.
+  useEffect(() => {
+    if (hasAudio || !playing) return;
     const start = Date.now() - currentTime * 1000;
     const tick = setInterval(() => {
       const elapsed = (Date.now() - start) / 1000;
-      if (elapsed >= song.duration) {
+      if (elapsed >= duration) {
         setCurrentTime(0);
         setPlaying(false);
         clearInterval(tick);
@@ -281,13 +307,19 @@ export default function SongLockup({ song }: { song: SongData }) {
     }, 100);
     return () => clearInterval(tick);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing]);
+  }, [playing, hasAudio, duration]);
 
   const onToggle = useCallback(() => {
     if (playing) {
+      audioRef.current?.pause();
       setPlaying(false);
     } else {
-      setCurrentTime(0);
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      } else {
+        setCurrentTime(0);
+      }
       setPlaying(true);
       window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
     }
@@ -295,16 +327,21 @@ export default function SongLockup({ song }: { song: SongData }) {
 
   const onSeek = useCallback(
     (ratio: number) => {
-      setCurrentTime(song.duration * ratio);
+      const target = duration * ratio;
+      if (audioRef.current) {
+        audioRef.current.currentTime = target;
+        if (!playing) audioRef.current.play().catch(() => {});
+      }
+      setCurrentTime(target);
       if (!playing) {
         setPlaying(true);
         window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
       }
     },
-    [playing, song.duration, song.id],
+    [playing, duration, song.id],
   );
 
-  const progress = song.duration > 0 ? Math.min(1, currentTime / song.duration) : 0;
+  const progress = duration > 0 ? Math.min(1, currentTime / duration) : 0;
   const thumbSize = 128;
 
   return (
@@ -314,24 +351,25 @@ export default function SongLockup({ song }: { song: SongData }) {
         background: '#1f2937',
         border: `1px solid ${playing ? '#3b82f6' : '#374151'}`,
         borderRadius: 12,
-        padding: 20,
+        padding: '20px 20px 12px',
         display: 'flex',
-        flexDirection: 'row-reverse',
-        gap: 20,
+        flexDirection: 'column',
+        gap: 14,
         overflow: 'hidden',
         transition: 'border-color 200ms ease',
       }}
     >
-      <div style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
-        <SongThumbnail
-          playing={playing}
-          onToggle={onToggle}
-          size={thumbSize}
-          cover={song.cover}
-        />
-      </div>
+      <div style={{ display: 'flex', flexDirection: 'row-reverse', gap: 20, minWidth: 0 }}>
+        <div style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
+          <SongThumbnail
+            playing={playing}
+            onToggle={onToggle}
+            size={thumbSize}
+            cover={song.cover}
+          />
+        </div>
 
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <div
           style={{
             display: 'flex',
@@ -347,7 +385,7 @@ export default function SongLockup({ song }: { song: SongData }) {
           <span aria-hidden="true" style={{ opacity: 0.5 }}>
             ·
           </span>
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtTime(song.duration)}</span>
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtTime(duration)}</span>
           {song.tags.length > 0 && (
             <>
               <span aria-hidden="true" style={{ opacity: 0.5 }}>
@@ -406,13 +444,19 @@ export default function SongLockup({ song }: { song: SongData }) {
           </blockquote>
         )}
 
-        <ProgressPill
-          progress={progress}
-          duration={song.duration}
-          currentTime={currentTime}
-          onSeek={onSeek}
-        />
+        </div>
       </div>
+
+      <ProgressPill
+        progress={progress}
+        duration={duration}
+        currentTime={currentTime}
+        onSeek={onSeek}
+      />
+
+      {song.audio && (
+        <audio ref={audioRef} src={song.audio} preload="metadata" />
+      )}
     </article>
   );
 }
