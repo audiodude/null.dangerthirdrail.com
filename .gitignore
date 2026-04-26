@@ -6,8 +6,10 @@ dist/
 # dependencies
 node_modules/
 
-# audio masters / mp3s — synced to R2, never committed
-public/songs/
+# audio masters / mp3s — synced to R2, never committed.
+# No trailing slash so this matches both a directory AND a symlink (the
+# user has this pointing at a Dropbox-synced folder on their machine).
+public/songs
 
 # logs
 npm-debug.log*
