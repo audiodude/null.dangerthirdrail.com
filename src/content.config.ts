@@ -6,9 +6,17 @@ const songs = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.date(),
-    duration: z.number(),
     tags: z.array(z.string()).default([]),
-    audio: z.string().optional(),
+    versions: z
+      .array(
+        z.object({
+          name: z.string(),
+          audio: z.string(),
+          accent: z.string().default('#3b82f6'),
+          appendix: z.string().optional(),
+        }),
+      )
+      .default([]),
     lyric: z.string().optional(),
     cover: z.enum(['pressure', 'server', 'island', 'trackpad', 'found']),
   }),

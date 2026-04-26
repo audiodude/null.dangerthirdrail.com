@@ -37,3 +37,22 @@ a:focus-visible {
     transform: scaleY(1);
   }
 }
+
+/* Lockup reflows on narrow screens: header (date + title) on top, then the
+   cover art, then the long-form body (description / lyric / appendix). */
+@media (max-width: 640px) {
+  .nr-lockup-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      'header'
+      'thumb'
+      'body' !important;
+    row-gap: 14px !important;
+  }
+  .nr-lockup-thumb > button {
+    width: 160px !important;
+    height: 160px !important;
+    margin: 0 auto !important;
+    display: block !important;
+  }
+}

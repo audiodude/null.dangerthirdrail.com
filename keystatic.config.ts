@@ -12,19 +12,43 @@ export default config({
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
         date: fields.date({ label: 'Date' }),
-        duration: fields.integer({
-          label: 'Duration (seconds)',
-          defaultValue: 180,
-        }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
           label: 'Tags',
           itemLabel: (props) => props.value,
         }),
-        audio: fields.text({
-          label: 'Audio URL or path',
-          description:
-            'Path under /songs/ (e.g. /songs/skin/audio.mp3) or full URL (e.g. https://audio.null.dangerthirdrail.com/skin.mp3 once on R2). Drop the actual file in public/songs/ yourself — this field is just the reference.',
-        }),
+        versions: fields.array(
+          fields.object({
+            name: fields.text({ label: 'Version name' }),
+            audio: fields.text({
+              label: 'Audio path or URL',
+              description:
+                'Path under public/songs/ (e.g. skin/v2.mp3) or full URL after sync.',
+            }),
+            accent: fields.select({
+              label: 'Accent color',
+              options: [
+                { label: 'Blue',        value: '#3b82f6' },
+                { label: 'Sky',         value: '#0ea5e9' },
+                { label: 'Light blue',  value: '#60a5fa' },
+                { label: 'Indigo',      value: '#6366f1' },
+                { label: 'Teal',        value: '#14b8a6' },
+                { label: 'Green',       value: '#10b981' },
+                { label: 'Amber',       value: '#f59e0b' },
+                { label: 'Red',         value: '#ef4444' },
+                { label: 'Slate',       value: '#94a3b8' },
+              ],
+              defaultValue: '#3b82f6',
+            }),
+            appendix: fields.text({
+              label: 'Appendix (italic, shown only when this version is active)',
+              multiline: true,
+            }),
+          }),
+          {
+            label: 'Versions',
+            itemLabel: (props) => props.fields.name.value || '(unnamed)',
+          },
+        ),
         description: fields.markdoc({
           label: 'Description',
           extension: 'md',

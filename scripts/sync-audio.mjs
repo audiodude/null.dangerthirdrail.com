@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// Walks src/content/songs/*.md, finds entries whose `audio:` field is a local
-// path or bare filename, uploads the corresponding file from public/songs/ to
-// R2, and rewrites the .md to point at the public R2 URL.
+// Walks src/content/songs/*.md, finds every `audio:` field (top-level OR
+// nested under versions) whose value is a local path, uploads the
+// corresponding file from public/songs/ to R2, and rewrites the .md to
+// point at the public R2 URL.
 //
 // Configuration (env vars):
 //   R2_BUCKET             default: null-rail-songs
@@ -38,42 +39,70 @@ function toRelativeKey(audio) {
   return audio;
 }
 
-async function processFile(mdPath) {
-  const content = await readFile(mdPath, 'utf8');
-  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!fmMatch) return { mdPath, status: 'no-frontmatter' };
-  const audioLineRe = /^audio:\s*(.+?)\s*$/m;
-  const audioMatch = fmMatch[1].match(audioLineRe);
-  if (!audioMatch) return { mdPath, status: 'no-audio' };
-  const audio = audioMatch[1].trim();
-  if (isUrl(audio)) return { mdPath, status: 'already-synced' };
+// Match every `audio:` line in YAML frontmatter, allowing leading whitespace
+// (so it catches both top-level and array-nested keys).
+const audioLineRe = /^([ \t]*)audio:[ \t]+(["']?)([^\n\r"']+?)\2[ \t]*$/gm;
 
-  const relKey = toRelativeKey(audio);
-  const localPath = join(PUBLIC_AUDIO_DIR, relKey);
-  if (!existsSync(localPath)) {
-    return { mdPath, status: 'missing-file', localPath };
+async function processFile(mdPath) {
+  let content = await readFile(mdPath, 'utf8');
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!fmMatch) return { synced: 0, skipped: 1, missing: 0 };
+
+  const fmStart = 0;
+  const fmEnd = fmMatch[0].length;
+  const fm = content.slice(fmStart, fmEnd);
+  const rest = content.slice(fmEnd);
+
+  const matches = [...fm.matchAll(audioLineRe)];
+  if (matches.length === 0) return { synced: 0, skipped: 1, missing: 0 };
+
+  let synced = 0;
+  let skipped = 0;
+  let missing = 0;
+  let newFm = fm;
+
+  for (const m of matches) {
+    const [oldLine, indent, , audio] = m;
+    if (isUrl(audio)) {
+      skipped++;
+      continue;
+    }
+
+    const relKey = toRelativeKey(audio);
+    const localPath = join(PUBLIC_AUDIO_DIR, relKey);
+    if (!existsSync(localPath)) {
+      console.error(`  ✗ ${mdPath}: missing ${localPath}`);
+      missing++;
+      continue;
+    }
+
+    console.log(`  ↑ ${localPath}  →  r2://${R2_BUCKET}/${relKey}`);
+    execFileSync(
+      'npx',
+      [
+        'wrangler',
+        'r2',
+        'object',
+        'put',
+        `${R2_BUCKET}/${relKey}`,
+        '--file',
+        localPath,
+        '--remote',
+      ],
+      { stdio: 'inherit' },
+    );
+
+    const newUrl = `${R2_PUBLIC_BASE}/${relKey}`;
+    const newLine = `${indent}audio: ${newUrl}`;
+    newFm = newFm.replace(oldLine, newLine);
+    console.log(`  ✓ ${mdPath}: ${audio} → ${newUrl}`);
+    synced++;
   }
 
-  console.log(`  ↑ ${localPath}  →  r2://${R2_BUCKET}/${relKey}`);
-  execFileSync(
-    'npx',
-    [
-      'wrangler',
-      'r2',
-      'object',
-      'put',
-      `${R2_BUCKET}/${relKey}`,
-      '--file',
-      localPath,
-      '--remote',
-    ],
-    { stdio: 'inherit' },
-  );
-
-  const newUrl = `${R2_PUBLIC_BASE}/${relKey}`;
-  const newContent = content.replace(audioLineRe, `audio: ${newUrl}`);
-  await writeFile(mdPath, newContent);
-  return { mdPath, status: 'synced', newUrl };
+  if (newFm !== fm) {
+    await writeFile(mdPath, newFm + rest);
+  }
+  return { synced, skipped, missing };
 }
 
 async function main() {
@@ -90,23 +119,10 @@ async function main() {
   let missing = 0;
 
   for (const f of mdFiles) {
-    const mdPath = join(SONGS_DIR, f);
-    const result = await processFile(mdPath);
-    switch (result.status) {
-      case 'synced':
-        console.log(`  ✓ ${mdPath}  →  audio: ${result.newUrl}`);
-        synced++;
-        break;
-      case 'already-synced':
-      case 'no-audio':
-      case 'no-frontmatter':
-        skipped++;
-        break;
-      case 'missing-file':
-        console.error(`  ✗ ${mdPath}: missing ${result.localPath}`);
-        missing++;
-        break;
-    }
+    const r = await processFile(join(SONGS_DIR, f));
+    synced += r.synced;
+    skipped += r.skipped;
+    missing += r.missing;
   }
 
   console.log('');

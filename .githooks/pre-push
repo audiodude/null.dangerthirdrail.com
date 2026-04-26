@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
 # Block push if any song's audio: field still references a local path.
-# Forces `npm run sync-audio` before deploying so production has all files.
+# Walks every audio: line in frontmatter (top-level OR nested under versions).
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
 unsynced=()
+shopt -s nullglob
 for f in src/content/songs/*.md; do
-  [ -f "$f" ] || continue
-  audio=$(awk '/^audio:[[:space:]]/ {sub(/^audio:[[:space:]]*/, ""); sub(/[[:space:]]*$/, ""); print; exit}' "$f")
-  [ -z "$audio" ] && continue
-  case "$audio" in
-    http://*|https://*) ;;
-    *) unsynced+=("$f → $audio") ;;
-  esac
+  while IFS= read -r audio; do
+    [ -z "$audio" ] && continue
+    case "$audio" in
+      http://*|https://*) ;;
+      *) unsynced+=("$f → $audio") ;;
+    esac
+  done < <(awk '/^[[:space:]]*audio:[[:space:]]/ {
+    sub(/^[[:space:]]*audio:[[:space:]]+/, "")
+    gsub(/^["\047]|["\047]$/, "")
+    sub(/[[:space:]]*$/, "")
+    print
+  }' "$f")
 done
 
 if [ ${#unsynced[@]} -gt 0 ]; then

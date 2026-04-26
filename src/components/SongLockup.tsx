@@ -1,18 +1,27 @@
 // SongLockup — a song presented as a blog post.
 // Layout, density, progress-bar style are baked: image-right / tight / inline pill.
+// Songs can have multiple versions; tabs along the top switch between them
+// and each version remembers its own playhead position.
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import CoverArt, { type CoverKey } from './CoverArt';
 
 const PLAY_EVENT = 'null-rail:play';
+const DEFAULT_ACCENT = '#3b82f6';
+
+export interface SongVersion {
+  name: string;
+  audio: string;
+  accent: string;
+  appendix?: string;
+}
 
 export interface SongData {
   id: string;
   title: string;
-  date: string; // ISO yyyy-mm-dd from Astro
-  duration: number;
+  date: string;
   tags: string[];
-  audio?: string;
+  versions: SongVersion[];
   description: string;
   lyric?: string;
   cover: CoverKey;
@@ -25,13 +34,17 @@ const fmtTime = (s: number) => {
   return `${m}:${sec.toString().padStart(2, '0')}`;
 };
 
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+// Parse the YYYY-MM-DD parts directly — never feed the bare date into
+// Date(), which assumes UTC midnight and rolls back a day in PST/PDT etc.
 const fmtDate = (iso: string) => {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  });
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return `${MONTHS[m - 1]} ${String(d).padStart(2, '0')}, ${y}`;
 };
 
 function PlayingBars({ size = 64, color = '#fff' }: { size?: number; color?: string }) {
@@ -92,9 +105,10 @@ interface ThumbnailProps {
   onToggle: () => void;
   size: number;
   cover: CoverKey;
+  accent: string;
 }
 
-function SongThumbnail({ playing, onToggle, size, cover }: ThumbnailProps) {
+function SongThumbnail({ playing, onToggle, size, cover, accent }: ThumbnailProps) {
   const [hover, setHover] = useState(false);
   return (
     <button
@@ -144,14 +158,14 @@ function SongThumbnail({ playing, onToggle, size, cover }: ThumbnailProps) {
               width: Math.round(size * 0.42),
               height: Math.round(size * 0.42),
               borderRadius: '50%',
-              background: '#2563eb',
-              border: '1px solid #3b82f6',
+              background: accent,
+              border: `1px solid ${accent}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 6px 18px rgba(37, 99, 235, .45)',
+              boxShadow: `0 6px 18px ${accent}66`,
               transform: hover ? 'scale(1.06)' : 'scale(1)',
-              transition: 'transform 160ms ease',
+              transition: 'transform 160ms ease, background 160ms ease',
             }}
           >
             {playing ? (
@@ -189,10 +203,11 @@ interface ProgressProps {
   progress: number;
   duration: number;
   currentTime: number;
+  accent: string;
   onSeek: (ratio: number) => void;
 }
 
-function ProgressPill({ progress, duration, currentTime, onSeek }: ProgressProps) {
+function ProgressPill({ progress, duration, currentTime, accent, onSeek }: ProgressProps) {
   const ref = useRef<HTMLDivElement>(null);
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
@@ -230,8 +245,8 @@ function ProgressPill({ progress, duration, currentTime, onSeek }: ProgressProps
             position: 'absolute',
             inset: 0,
             width: `${progress * 100}%`,
-            background: '#3b82f6',
-            transition: 'width 120ms linear',
+            background: accent,
+            transition: 'width 120ms linear, background 200ms ease',
           }}
         />
       </div>
@@ -249,19 +264,77 @@ function ProgressPill({ progress, duration, currentTime, onSeek }: ProgressProps
   );
 }
 
+interface VersionTabsProps {
+  versions: SongVersion[];
+  activeIdx: number;
+  onSelect: (idx: number) => void;
+}
+
+function VersionTabs({ versions, activeIdx, onSelect }: VersionTabsProps) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 2,
+        paddingLeft: 14,
+        flexWrap: 'wrap',
+        position: 'relative',
+        zIndex: 1,
+      }}
+    >
+      {versions.map((v, i) => {
+        const isActive = i === activeIdx;
+        return (
+          <button
+            key={i}
+            onClick={() => onSelect(i)}
+            style={{
+              padding: '7px 16px',
+              border: 'none',
+              borderTopLeftRadius: 8,
+              borderTopRightRadius: 8,
+              background: isActive ? v.accent : '#374151',
+              color: isActive ? '#fff' : '#d1d5db',
+              fontSize: 13,
+              fontWeight: 500,
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'background 160ms ease, color 160ms ease',
+            }}
+          >
+            {v.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function SongLockup({ song }: { song: SongData }) {
+  const versions = song.versions;
+  const hasVersions = versions.length > 0;
+  const showTabs = versions.length > 1;
+
+  const [activeIdx, setActiveIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(song.duration);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const hasAudio = Boolean(song.audio);
+  const [duration, setDuration] = useState(0);
 
-  // Cross-island singleton: when one song starts, others pause.
+  // Per-version playhead memory.
+  const versionTimesRef = useRef<Record<number, number>>({});
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const active = hasVersions
+    ? versions[activeIdx]
+    : { name: '', audio: '', accent: DEFAULT_ACCENT, appendix: undefined };
+  const accent = active.accent || DEFAULT_ACCENT;
+
+  // Cross-island singleton: when another lockup starts, pause this one.
   useEffect(() => {
     const handler = (e: Event) => {
       const ce = e as CustomEvent<{ id: string }>;
       if (ce.detail?.id !== song.id) {
-        if (audioRef.current) audioRef.current.pause();
+        audioRef.current?.pause();
         setPlaying(false);
       }
     };
@@ -269,10 +342,12 @@ export default function SongLockup({ song }: { song: SongData }) {
     return () => window.removeEventListener(PLAY_EVENT, handler);
   }, [song.id]);
 
-  // Real audio: track time/duration/end via <audio> events.
+  // Wire <audio> events whenever the active version changes (the element
+  // remounts via key={activeIdx}, so listeners re-attach to the new node).
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
     const onTime = () => setCurrentTime(audio.currentTime);
     const onMeta = () => {
       if (isFinite(audio.duration)) setDuration(audio.duration);
@@ -280,58 +355,69 @@ export default function SongLockup({ song }: { song: SongData }) {
     const onEnded = () => {
       setPlaying(false);
       setCurrentTime(0);
+      versionTimesRef.current[activeIdx] = 0;
     };
+
     audio.addEventListener('timeupdate', onTime);
     audio.addEventListener('loadedmetadata', onMeta);
     audio.addEventListener('ended', onEnded);
+
+    // Restore the saved playhead for this version.
+    const target = versionTimesRef.current[activeIdx] ?? 0;
+    const restore = () => {
+      audio.currentTime = target;
+    };
+    if (audio.readyState >= 1) {
+      restore();
+    } else {
+      audio.addEventListener('loadedmetadata', restore, { once: true });
+    }
+
+    // Reset live duration to 0 until the new version's metadata loads, so
+    // we don't briefly show the previous version's length.
+    setDuration(isFinite(audio.duration) ? audio.duration : 0);
+
     return () => {
       audio.removeEventListener('timeupdate', onTime);
       audio.removeEventListener('loadedmetadata', onMeta);
       audio.removeEventListener('ended', onEnded);
     };
-  }, []);
+  }, [activeIdx]);
 
-  // Faked playback timer — only used when there's no real audio file.
+  // Honor `playing` against the (possibly newly-mounted) audio element.
   useEffect(() => {
-    if (hasAudio || !playing) return;
-    const start = Date.now() - currentTime * 1000;
-    const tick = setInterval(() => {
-      const elapsed = (Date.now() - start) / 1000;
-      if (elapsed >= duration) {
-        setCurrentTime(0);
-        setPlaying(false);
-        clearInterval(tick);
-        return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) {
+      const tryPlay = () => {
+        audio.play().catch(() => {});
+      };
+      if (audio.readyState >= 2) {
+        tryPlay();
+      } else {
+        audio.addEventListener('canplay', tryPlay, { once: true });
+        return () => audio.removeEventListener('canplay', tryPlay);
       }
-      setCurrentTime(elapsed);
-    }, 100);
-    return () => clearInterval(tick);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, hasAudio, duration]);
+    } else {
+      audio.pause();
+    }
+  }, [playing, activeIdx]);
 
   const onToggle = useCallback(() => {
+    if (!hasVersions) return;
     if (playing) {
-      audioRef.current?.pause();
       setPlaying(false);
     } else {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(() => {});
-      } else {
-        setCurrentTime(0);
-      }
       setPlaying(true);
       window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
     }
-  }, [playing, song.id]);
+  }, [playing, song.id, hasVersions]);
 
   const onSeek = useCallback(
     (ratio: number) => {
-      const target = duration * ratio;
-      if (audioRef.current) {
-        audioRef.current.currentTime = target;
-        if (!playing) audioRef.current.play().catch(() => {});
-      }
+      const target = (duration || 0) * ratio;
+      const audio = audioRef.current;
+      if (audio) audio.currentTime = target;
       setCurrentTime(target);
       if (!playing) {
         setPlaying(true);
@@ -341,122 +427,195 @@ export default function SongLockup({ song }: { song: SongData }) {
     [playing, duration, song.id],
   );
 
+  // Tab click: save outgoing time, switch, restore. Preserve play state —
+  // if music was paused, the new version stays paused; if it was playing,
+  // it keeps playing in the new version.
+  const onSelectVersion = useCallback(
+    (idx: number) => {
+      if (idx === activeIdx) return;
+      versionTimesRef.current[activeIdx] = currentTime;
+      setActiveIdx(idx);
+      setCurrentTime(versionTimesRef.current[idx] ?? 0);
+      if (playing) {
+        window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
+      }
+    },
+    [activeIdx, currentTime, playing, song.id],
+  );
+
   const progress = duration > 0 ? Math.min(1, currentTime / duration) : 0;
   const thumbSize = 128;
 
   return (
-    <article
-      style={{
-        position: 'relative',
-        background: '#1f2937',
-        border: `1px solid ${playing ? '#3b82f6' : '#374151'}`,
-        borderRadius: 12,
-        padding: '20px 20px 12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 14,
-        overflow: 'hidden',
-        transition: 'border-color 200ms ease',
-      }}
-    >
-      <div style={{ display: 'flex', flexDirection: 'row-reverse', gap: 20, minWidth: 0 }}>
-        <div style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
-          <SongThumbnail
-            playing={playing}
-            onToggle={onToggle}
-            size={thumbSize}
-            cover={song.cover}
-          />
-        </div>
-
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: 12,
-            color: '#9ca3af',
-            fontSize: 13,
-            marginBottom: 6,
-          }}
-        >
-          <time dateTime={song.date}>{fmtDate(song.date)}</time>
-          <span aria-hidden="true" style={{ opacity: 0.5 }}>
-            ·
-          </span>
-          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtTime(duration)}</span>
-          {song.tags.length > 0 && (
-            <>
-              <span aria-hidden="true" style={{ opacity: 0.5 }}>
-                ·
-              </span>
-              <span style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}>
-                {song.tags.map((t) => (
-                  <Tag key={t}>{t}</Tag>
-                ))}
-              </span>
-            </>
-          )}
-        </div>
-
-        <h2
-          style={{
-            color: '#fff',
-            fontSize: 22,
-            fontWeight: 800,
-            lineHeight: 1.2,
-            letterSpacing: '-0.01em',
-            margin: 0,
-          }}
-        >
-          {song.title}
-        </h2>
-
-        {song.description && (
-          <p
-            style={{
-              color: '#d1d5db',
-              fontSize: 15,
-              lineHeight: 1.65,
-              margin: '10px 0 0',
-              textWrap: 'pretty',
-            }}
-          >
-            {song.description}
-          </p>
-        )}
-
-        {song.lyric && (
-          <blockquote
-            style={{
-              margin: '12px 0 0',
-              padding: '0 0 0 14px',
-              borderLeft: '2px solid #475569',
-              color: '#9ca3af',
-              fontSize: 14,
-              fontStyle: 'italic',
-              lineHeight: 1.55,
-              whiteSpace: 'pre-line',
-            }}
-          >
-            {song.lyric}
-          </blockquote>
-        )}
-
-        </div>
-      </div>
-
-      <ProgressPill
-        progress={progress}
-        duration={duration}
-        currentTime={currentTime}
-        onSeek={onSeek}
-      />
-
-      {song.audio && (
-        <audio ref={audioRef} src={song.audio} preload="metadata" />
+    <div>
+      {showTabs && (
+        <VersionTabs versions={versions} activeIdx={activeIdx} onSelect={onSelectVersion} />
       )}
-    </article>
+
+      <article
+        style={{
+          position: 'relative',
+          background: '#1f2937',
+          // Thick top stripe in the active version's accent so the highlighted
+          // tab visually bleeds into the lockup. Sides/bottom stay thin gray.
+          borderWidth: showTabs ? '4px 1px 1px 1px' : '1px',
+          borderStyle: 'solid',
+          borderColor: showTabs
+            ? `${accent} #374151 #374151 #374151`
+            : '#374151',
+          borderRadius: 12,
+          borderTopLeftRadius: showTabs ? 0 : 12,
+          padding: '20px 20px 12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+          overflow: 'hidden',
+          transition: 'border-color 200ms ease',
+        }}
+      >
+        <div
+          className="nr-lockup-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            gridTemplateAreas: '"header thumb" "body thumb"',
+            columnGap: 20,
+            minWidth: 0,
+          }}
+        >
+          <div className="nr-lockup-header" style={{ gridArea: 'header', minWidth: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 12,
+                color: '#9ca3af',
+                fontSize: 13,
+                marginBottom: 6,
+              }}
+            >
+              <time dateTime={song.date}>{fmtDate(song.date)}</time>
+              {duration > 0 && (
+                <>
+                  <span aria-hidden="true" style={{ opacity: 0.5 }}>
+                    ·
+                  </span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmtTime(duration)}</span>
+                </>
+              )}
+              {song.tags.length > 0 && (
+                <>
+                  <span aria-hidden="true" style={{ opacity: 0.5 }}>
+                    ·
+                  </span>
+                  <span style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}>
+                    {song.tags.map((t) => (
+                      <Tag key={t}>{t}</Tag>
+                    ))}
+                  </span>
+                </>
+              )}
+            </div>
+
+            <h2
+              style={{
+                color: '#fff',
+                fontSize: 22,
+                fontWeight: 800,
+                lineHeight: 1.2,
+                letterSpacing: '-0.01em',
+                margin: 0,
+              }}
+            >
+              {song.title}
+            </h2>
+          </div>
+
+          <div className="nr-lockup-thumb" style={{ gridArea: 'thumb', alignSelf: 'start' }}>
+            <SongThumbnail
+              playing={playing}
+              onToggle={onToggle}
+              size={thumbSize}
+              cover={song.cover}
+              accent={accent}
+            />
+          </div>
+
+          <div className="nr-lockup-body" style={{ gridArea: 'body', minWidth: 0 }}>
+            {song.description && (
+              <p
+                style={{
+                  color: '#d1d5db',
+                  fontSize: 15,
+                  lineHeight: 1.65,
+                  margin: '10px 0 0',
+                  textWrap: 'pretty',
+                }}
+              >
+                {song.description}
+              </p>
+            )}
+
+            {song.lyric && (
+              <blockquote
+                style={{
+                  margin: '12px 0 0',
+                  padding: '0 0 0 14px',
+                  borderLeft: '2px solid #475569',
+                  color: '#9ca3af',
+                  fontSize: 14,
+                  fontStyle: 'italic',
+                  lineHeight: 1.55,
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {song.lyric}
+              </blockquote>
+            )}
+
+            {active.appendix && (
+              <div style={{ margin: '14px 0 0' }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.07em',
+                    color: accent,
+                    marginBottom: 4,
+                  }}
+                >
+                  Alternate version ({active.name})
+                </div>
+                <p
+                  style={{
+                    color: '#9ca3af',
+                    fontSize: 14,
+                    fontStyle: 'italic',
+                    lineHeight: 1.6,
+                    margin: 0,
+                  }}
+                >
+                  {active.appendix}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <ProgressPill
+          progress={progress}
+          duration={duration}
+          currentTime={currentTime}
+          accent={accent}
+          onSeek={onSeek}
+        />
+
+        {hasVersions && (
+          <audio key={activeIdx} ref={audioRef} src={active.audio} preload="metadata" />
+        )}
+      </article>
+    </div>
   );
 }

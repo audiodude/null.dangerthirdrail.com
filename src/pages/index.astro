@@ -21,9 +21,13 @@ const lockupData: SongData[] = sorted.map((entry) => ({
   id: entry.id,
   title: entry.data.title,
   date: entry.data.date.toISOString().slice(0, 10),
-  duration: entry.data.duration,
   tags: entry.data.tags,
-  audio: resolveAudio(entry.data.audio),
+  versions: entry.data.versions.map((v) => ({
+    name: v.name,
+    audio: resolveAudio(v.audio)!,
+    accent: v.accent,
+    appendix: v.appendix,
+  })),
   description: (entry.body ?? '').trim(),
   lyric: entry.data.lyric,
   cover: entry.data.cover,
@@ -106,6 +110,28 @@ const lockupData: SongData[] = sorted.map((entry) => ({
     margin: 0;
     line-height: 1.55;
     text-wrap: pretty;
+  }
+
+  @media (max-width: 640px) {
+    .main {
+      padding: 28px 16px 16px;
+    }
+    .hero {
+      margin-bottom: 32px;
+    }
+    .hero__title {
+      font-size: 28px;
+      line-height: 1.15;
+      margin: 0 0 10px;
+    }
+    .hero__lede {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .hero__badge {
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
   }
   .feed {
     display: flex;
