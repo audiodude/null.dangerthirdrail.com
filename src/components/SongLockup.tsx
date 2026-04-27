@@ -204,10 +204,20 @@ interface ProgressProps {
   duration: number;
   currentTime: number;
   accent: string;
+  playing: boolean;
+  onToggle: () => void;
   onSeek: (ratio: number) => void;
 }
 
-function ProgressPill({ progress, duration, currentTime, accent, onSeek }: ProgressProps) {
+function ProgressPill({
+  progress,
+  duration,
+  currentTime,
+  accent,
+  playing,
+  onToggle,
+  onSeek,
+}: ProgressProps) {
   const ref = useRef<HTMLDivElement>(null);
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
@@ -216,7 +226,28 @@ function ProgressPill({ progress, duration, currentTime, accent, onSeek }: Progr
     onSeek(ratio);
   };
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <button
+        onClick={onToggle}
+        aria-label={playing ? 'Pause' : 'Play'}
+        style={{
+          width: 26,
+          height: 26,
+          flexShrink: 0,
+          border: 'none',
+          borderRadius: '50%',
+          background: accent,
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          padding: 0,
+          transition: 'background 200ms ease',
+        }}
+      >
+        {playing ? <PauseIcon size={12} /> : <PlayIcon size={12} />}
+      </button>
       <span
         style={{
           fontSize: 12,
@@ -609,6 +640,8 @@ export default function SongLockup({ song }: { song: SongData }) {
           duration={duration}
           currentTime={currentTime}
           accent={accent}
+          playing={playing}
+          onToggle={onToggle}
           onSeek={onSeek}
         />
 
