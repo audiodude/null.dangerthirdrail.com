@@ -1,6 +1,7 @@
 ---
 title: Lift
-date: 2026-04-27 23:00:00
+date: 2026-04-27
+order: 1
 tags:
   - sample
   - 80s
@@ -22,6 +23,18 @@ versions:
       weak (it forgot to repeat the chorus 18 times). I took it into the editor.
       I was shocked by how well it retained coherence when chopping and
       replacing parts/sections.
+  - name: Gemini Version
+    audio: https://audio.null.dangerthirdrail.com/lift_gemini.mp3
+    accent: '#3b82f6'
+    appendix: >-
+      Gemini: mostly fail. Just awful. To be fair, it got the genre and feel
+      mostly right. Unfortunately, it doesn't allow basing the music off a
+      sample like Suno.
+
+
+      I pasted in the lyrics and prompt directly from Suno, but Gemini doesn't
+      have separate inputs for each. It also doesn't follow "stage directions",
+      like "Lift! [background echo]" so it ends up singing them as lyrics.
 lyric: Lift! Now lift it!
 cover: pressure
 ---
