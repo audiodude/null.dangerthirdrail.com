@@ -8,7 +8,7 @@ tags:
 versions:
   - name: Original
     audio: https://audio.null.dangerthirdrail.com/disassociate.mp3
-    accent: '#3b82f6'
+    accent: '#f59e0b'
   - name: Crossmix
     audio: https://audio.null.dangerthirdrail.com/disassociate_cross.mp3
     accent: '#6366f1'

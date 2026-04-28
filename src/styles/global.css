@@ -38,6 +38,24 @@ a:focus-visible {
   }
 }
 
+/* Fragment-linked song highlight */
+.nr-song {
+  scroll-margin-top: 24px;
+}
+.nr-song:target > article {
+  animation: nr-highlight 3s ease-out 0.3s both;
+}
+@keyframes nr-highlight {
+  0%, 25% {
+    box-shadow: 0 0 0 3px var(--nr-accent), 0 0 36px color-mix(in srgb, var(--nr-accent) 60%, transparent);
+    background: color-mix(in srgb, var(--nr-accent) 15%, #1f2937);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent, 0 0 36px transparent;
+    background: #1f2937;
+  }
+}
+
 /* Lockup reflows on narrow screens: header (date + title) on top, then the
    cover art, then the long-form body (description / lyric / appendix). */
 @media (max-width: 640px) {

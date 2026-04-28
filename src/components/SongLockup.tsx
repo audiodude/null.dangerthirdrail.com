@@ -350,7 +350,6 @@ export default function SongLockup({ song }: { song: SongData }) {
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-
   // Per-version playhead memory.
   const versionTimesRef = useRef<Record<number, number>>({});
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -478,7 +477,7 @@ export default function SongLockup({ song }: { song: SongData }) {
   const thumbSize = 128;
 
   return (
-    <div>
+    <div id={song.id} className="nr-song" style={{ '--nr-accent': versions[0]?.accent || DEFAULT_ACCENT } as React.CSSProperties}>
       {showTabs && (
         <VersionTabs versions={versions} activeIdx={activeIdx} onSelect={onSelectVersion} />
       )}
@@ -559,7 +558,15 @@ export default function SongLockup({ song }: { song: SongData }) {
                 margin: 0,
               }}
             >
-              {song.title}
+              <a
+                href={`#${song.id}`}
+                style={{
+                  color: 'inherit',
+                  textDecoration: 'none',
+                }}
+              >
+                {song.title}
+              </a>
             </h2>
           </div>
 
