@@ -1,6 +1,6 @@
 # Null Rail
 
-Song blog at [null.dangerthirdrail.com](https://null.dangerthirdrail.com) — AI-generated music experiments using [Suno](https://suno.com), framed as a collaboration with Pewta, a personified AI bandmate.
+Song blog at [null.dangerthirdrail.com](https://null.dangerthirdrail.com) — AI-generated music experiments using [Suno](https://suno.com).
 
 Built with [Astro](https://astro.build) + React islands. Audio hosted on Cloudflare R2. Site hosted on Cloudflare Pages.
 
@@ -17,7 +17,7 @@ Songs are edited via [Keystatic](https://keystatic.com) at `http://localhost:432
 
 ## Audio workflow
 
-Mp3 masters live in `public/songs/` (a symlink to a Dropbox-synced folder, gitignored). Each song's `audio:` field in its `.md` frontmatter starts as a local path, then gets rewritten to an R2 URL on sync.
+MP3 masters live in `public/songs/` (a symlink to a Dropbox-synced folder, gitignored). Each song's `audio:` field in its `.md` frontmatter starts as a local path, then gets rewritten to an R2 URL on sync.
 
 ```sh
 npm run sync-audio          # upload new/changed mp3s to R2, rewrite frontmatter
