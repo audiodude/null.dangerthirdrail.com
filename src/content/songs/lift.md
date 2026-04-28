@@ -27,14 +27,11 @@ versions:
     audio: https://audio.null.dangerthirdrail.com/lift_gemini.mp3
     accent: '#3b82f6'
     appendix: >-
-      Gemini: mostly fail. Just awful. To be fair, it got the genre and feel
-      mostly right. Unfortunately, it doesn't allow basing the music off a
-      sample like Suno.
-
-
-      I pasted in the lyrics and prompt directly from Suno, but Gemini doesn't
-      have separate inputs for each. It also doesn't follow "stage directions",
-      like "Lift! [background echo]" so it ends up singing them as lyrics.
+      Gemini: mostly fail. I pasted in the lyrics and prompt directly from Suno,
+      but Gemini doesn't have separate inputs for each. Didn't quite get the
+      genre and feel right. Unfortunately, it also doesn't allow basing the
+      music off a sample like Suno, so I think that hurt it's chances. Not a lot
+      of coherency, random fills, just overall uninteresting.
 lyric: Lift! Now lift it!
 cover: pressure
 ---
