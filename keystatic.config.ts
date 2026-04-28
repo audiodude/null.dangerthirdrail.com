@@ -12,6 +12,11 @@ export default config({
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
         date: fields.date({ label: 'Date' }),
+        order: fields.integer({
+          label: 'Order',
+          description: 'Tiebreaker for same-date songs. Higher = listed first.',
+          defaultValue: 0,
+        }),
         tags: fields.array(fields.text({ label: 'Tag' }), {
           label: 'Tags',
           itemLabel: (props) => props.value,

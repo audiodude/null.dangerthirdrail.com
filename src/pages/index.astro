@@ -14,7 +14,7 @@ function resolveAudio(value?: string): string | undefined {
 
 const songs = await getCollection('songs');
 const sorted = songs.sort(
-  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+  (a, b) => b.data.date.getTime() - a.data.date.getTime() || (b.data.order ?? 0) - (a.data.order ?? 0),
 );
 
 const lockupData: SongData[] = sorted.map((entry) => ({

@@ -6,6 +6,7 @@ const songs = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.date(),
+    order: z.number().default(0),
     tags: z.array(z.string()).default([]),
     versions: z
       .array(
