@@ -18,6 +18,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 
+# sync-audio checksum manifest (machine-local)
+scripts/.sync-checksums.json
+
 # environment variables
 .env
 .env.production
