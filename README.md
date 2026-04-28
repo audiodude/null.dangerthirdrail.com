@@ -1,43 +1,83 @@
-# Astro Starter Kit: Minimal
+# Null Rail
+
+Song blog at [null.dangerthirdrail.com](https://null.dangerthirdrail.com) — AI-generated music experiments using [Suno](https://suno.com), framed as a collaboration with Pewta, a personified AI bandmate.
+
+Built with [Astro](https://astro.build) + React islands. Audio hosted on Cloudflare R2. Site hosted on Cloudflare Pages.
+
+## Setup
+
+Requires Node >= 22.12 (pinned in `.tool-versions`).
 
 ```sh
-npm create astro@latest -- --template minimal
+npm install
+npm run dev        # http://localhost:4321
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Songs are edited via [Keystatic](https://keystatic.com) at `http://localhost:4321/keystatic` in dev mode. Keystatic is excluded from production builds.
 
-## 🚀 Project Structure
+## Audio workflow
 
-Inside of your Astro project, you'll see the following folders and files:
+Mp3 masters live in `public/songs/` (a symlink to a Dropbox-synced folder, gitignored). Each song's `audio:` field in its `.md` frontmatter starts as a local path, then gets rewritten to an R2 URL on sync.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```sh
+npm run sync-audio          # upload new/changed mp3s to R2, rewrite frontmatter
+npm run clear-cache         # purge Cloudflare CDN cache
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+`sync-audio` tracks file checksums in `scripts/.sync-checksums.json` (gitignored). It detects changed local files automatically — no flags needed to re-upload a replaced mp3.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+A pre-push hook blocks pushes if any `audio:` field still points to a local path.
 
-Any static assets, like images, can be placed in the `public/` directory.
+### Required env vars
 
-## 🧞 Commands
+Set in `~/.secrets` (sourced by shell):
 
-All commands are run from the root of the project, from a terminal:
+- `CLOUDFLARE_API_TOKEN` — R2 Storage:Edit + Cache Purge
+- `CLOUDFLARE_ACCOUNT_ID`
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Adding a song
 
-## 👀 Want to learn more?
+1. Create the entry in Keystatic (or add a `.md` file to `src/content/songs/`)
+2. Drop mp3s into `public/songs/`
+3. Set the `audio:` fields to the filenames (e.g. `my_song.mp3`)
+4. `npm run sync-audio` to upload to R2
+5. Commit and push — the pre-push hook verifies all audio is synced
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Song schema
+
+Each song `.md` has YAML frontmatter:
+
+| Field | Type | Notes |
+|:------|:-----|:------|
+| `title` | string | Song name |
+| `date` | date | `YYYY-MM-DD`, newest first on page |
+| `order` | integer | Tiebreaker for same-date songs (higher = first, default 0) |
+| `tags` | string[] | Genre/mood tags |
+| `versions` | array | Multiple takes/styles, each with `name`, `audio`, `accent`, optional `appendix` |
+| `lyric` | string | Quoted lyric excerpt |
+| `cover` | enum | Generative cover art key: `pressure`, `server`, `island`, `trackpad`, `found` |
+
+The markdown body is the song's description.
+
+## Deploying
+
+Push to `main` triggers a GitHub Actions workflow that builds with `NODE_ENV=production` and deploys to Cloudflare Pages via wrangler.
+
+## Project structure
+
+```
+src/
+  content/songs/        # song .md files (Keystatic-managed)
+  components/
+    SongLockup.tsx      # main song card (React island)
+    CoverArt.tsx        # generative SVG covers
+    Header.astro
+    Footer.astro
+  layouts/Layout.astro  # base HTML shell, OG tags, Matomo
+  pages/index.astro     # homepage, sorts + renders songs
+  styles/global.css
+scripts/
+  sync-audio.mjs        # upload mp3s to R2
+  clear-cache.mjs       # purge Cloudflare CDN
+.githooks/pre-push      # blocks push with unsynced audio
+```
