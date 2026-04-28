@@ -10,4 +10,9 @@ const isDev = process.env.NODE_ENV !== 'production';
 export default defineConfig({
   site: 'https://null.dangerthirdrail.com',
   integrations: [react(), ...(isDev ? [keystatic()] : [])],
+  vite: {
+    server: {
+      allowedHosts: ['.trycloudflare.com'],
+    },
+  },
 });
