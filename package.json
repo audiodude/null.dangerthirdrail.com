@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "sync-audio": "node scripts/sync-audio.mjs",
+    "clear-cache": "node scripts/clear-cache.mjs",
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true"
   },
   "dependencies": {
