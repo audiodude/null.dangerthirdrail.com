@@ -14,4 +14,4 @@ versions:
     accent: '#6366f1'
 cover: pressure
 ---
-My very first experiment with this workflow and it's just.....insane. I literally uploaded a **nine second clip** of a basic-ish arp pattern with a little drum pattern I programmed in. Click the "Suno" tab to see what I got out...
+My very first experiment with this workflow and it's just *insane*. I literally uploaded a **nine second clip** of a basic-ish arp pattern with a little drum pattern I programmed in. Click the "Suno" tab to see what I got out! Also I named the song *Sample* because that's what I named the original....sample. And the name stuck 🙃
