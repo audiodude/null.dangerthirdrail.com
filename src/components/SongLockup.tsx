@@ -296,12 +296,13 @@ function ProgressPill({
 }
 
 interface VersionTabsProps {
+  songId: string;
   versions: SongVersion[];
   activeIdx: number;
   onSelect: (idx: number) => void;
 }
 
-function VersionTabs({ versions, activeIdx, onSelect }: VersionTabsProps) {
+function VersionTabs({ songId, versions, activeIdx, onSelect }: VersionTabsProps) {
   return (
     <div
       style={{
@@ -316,9 +317,13 @@ function VersionTabs({ versions, activeIdx, onSelect }: VersionTabsProps) {
       {versions.map((v, i) => {
         const isActive = i === activeIdx;
         return (
-          <button
+          <a
             key={i}
-            onClick={() => onSelect(i)}
+            href={`#${songId}/version/${encodeURIComponent(v.name)}`}
+            onClick={(e) => {
+              e.preventDefault();
+              onSelect(i);
+            }}
             style={{
               padding: '7px 16px',
               border: 'none',
@@ -331,10 +336,11 @@ function VersionTabs({ versions, activeIdx, onSelect }: VersionTabsProps) {
               fontFamily: 'inherit',
               cursor: 'pointer',
               transition: 'background 160ms ease, color 160ms ease',
+              textDecoration: 'none',
             }}
           >
             {v.name}
-          </button>
+          </a>
         );
       })}
     </div>
@@ -346,7 +352,17 @@ export default function SongLockup({ song }: { song: SongData }) {
   const hasVersions = versions.length > 0;
   const showTabs = versions.length > 1;
 
-  const [activeIdx, setActiveIdx] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+    const prefix = `${song.id}/version/`;
+    if (hash.startsWith(prefix)) {
+      const name = hash.slice(prefix.length);
+      const idx = versions.findIndex((v) => v.name === name);
+      if (idx >= 0) return idx;
+    }
+    return 0;
+  });
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -358,6 +374,20 @@ export default function SongLockup({ song }: { song: SongData }) {
     ? versions[activeIdx]
     : { name: '', audio: '', accent: DEFAULT_ACCENT, appendix: undefined };
   const accent = active.accent || DEFAULT_ACCENT;
+  const articleRef = useRef<HTMLElement>(null);
+
+  // On mount, if the URL hash targets this song (with or without a version
+  // suffix), scroll into view and play the highlight animation. Plain #songId
+  // hashes still work via CSS :target; this handles #songId/version/Name.
+  useEffect(() => {
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+    if (hash !== song.id && !hash.startsWith(`${song.id}/`)) return;
+    const el = document.getElementById(song.id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (hash.includes('/') && articleRef.current) {
+      articleRef.current.style.animation = 'nr-highlight 3s ease-out 0.3s both';
+    }
+  }, [song.id]);
 
   // Cross-island singleton: when another lockup starts, pause this one.
   useEffect(() => {
@@ -466,11 +496,12 @@ export default function SongLockup({ song }: { song: SongData }) {
       versionTimesRef.current[activeIdx] = currentTime;
       setActiveIdx(idx);
       setCurrentTime(versionTimesRef.current[idx] ?? 0);
+      history.replaceState(null, '', `#${song.id}/version/${encodeURIComponent(versions[idx].name)}`);
       if (playing) {
         window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
       }
     },
-    [activeIdx, currentTime, playing, song.id],
+    [activeIdx, currentTime, playing, song.id, versions],
   );
 
   const progress = duration > 0 ? Math.min(1, currentTime / duration) : 0;
@@ -479,10 +510,11 @@ export default function SongLockup({ song }: { song: SongData }) {
   return (
     <div id={song.id} className="nr-song" style={{ '--nr-accent': versions[0]?.accent || DEFAULT_ACCENT } as React.CSSProperties}>
       {showTabs && (
-        <VersionTabs versions={versions} activeIdx={activeIdx} onSelect={onSelectVersion} />
+        <VersionTabs songId={song.id} versions={versions} activeIdx={activeIdx} onSelect={onSelectVersion} />
       )}
 
       <article
+        ref={articleRef}
         style={{
           position: 'relative',
           background: '#1f2937',
