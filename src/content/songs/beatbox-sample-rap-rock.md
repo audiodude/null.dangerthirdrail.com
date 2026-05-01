@@ -9,10 +9,10 @@ tags:
   - recorded-sample
 versions:
   - name: Sample
-    audio: the_pain_sample.mp3
+    audio: https://audio.null.dangerthirdrail.com/the_pain_sample.mp3
     accent: '#3b82f6'
   - name: THE PAIN
-    audio: the_pain.mp3
+    audio: https://audio.null.dangerthirdrail.com/the_pain.mp3
     accent: '#ef4444'
     appendix: >-
       And this was the final version, after writing some lyrics for 5 minutes
