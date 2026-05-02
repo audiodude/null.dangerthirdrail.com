@@ -6,12 +6,15 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 unsynced=()
+bad_urls=()
 shopt -s nullglob
 for f in src/content/songs/*.md; do
   while IFS= read -r audio; do
     [ -z "$audio" ] && continue
     case "$audio" in
-      http://*|https://*) ;;
+      https://audio.null.dangerthirdrail.com/*) ;;
+      http://*) bad_urls+=("$f → $audio (not https)") ;;
+      https://*) bad_urls+=("$f → $audio (wrong host)") ;;
       *) unsynced+=("$f → $audio") ;;
     esac
   done < <(awk '/^[[:space:]]*audio:[[:space:]]/ {
@@ -22,12 +25,27 @@ for f in src/content/songs/*.md; do
   }' "$f")
 done
 
+errors=0
+
 if [ ${#unsynced[@]} -gt 0 ]; then
-  echo "✗ Push blocked: audio not synced to R2 in:"
+  echo "✗ Push blocked: audio not synced to R2:"
   for entry in "${unsynced[@]}"; do
     echo "    $entry"
   done
-  echo ""
-  echo "Run: npm run sync-audio"
+  echo "  Run: npm run sync-audio"
+  errors=1
+fi
+
+if [ ${#bad_urls[@]} -gt 0 ]; then
+  echo "✗ Push blocked: audio URLs must be https://audio.null.dangerthirdrail.com/..."
+  for entry in "${bad_urls[@]}"; do
+    echo "    $entry"
+  done
+  echo "  Run: npm run sync-audio"
+  echo "  Run: git restore --staged ."
+  errors=1
+fi
+
+if [ $errors -ne 0 ]; then
   exit 1
 fi

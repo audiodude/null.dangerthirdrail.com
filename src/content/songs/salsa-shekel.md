@@ -17,6 +17,12 @@ versions:
     audio: https://audio.null.dangerthirdrail.com/salsa_shekel_remix.mp3
     accent: '#3b82f6'
     appendix: Sorry I couldn't help myself....I had to keep going
+  - name: Salsa Shekel (dub kitty all-stars remix)
+    audio: https://audio.null.dangerthirdrail.com/salsa_shekel_dub.mp3
+    accent: '#14b8a6'
+    appendix: >-
+      Okay I know it's getting old. But I had one last idea (and also shook the
+      style up a bit)
 lyric: Shekel muh kitty cat
 cover: pressure
 ---
