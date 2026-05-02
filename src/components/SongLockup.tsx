@@ -428,17 +428,7 @@ export default function SongLockup({ song }: { song: SongData }) {
   const hasVersions = versions.length > 0;
   const showTabs = versions.length > 1;
 
-  const [activeIdx, setActiveIdx] = useState(() => {
-    if (typeof window === 'undefined') return 0;
-    const { path } = parseHash(window.location.hash);
-    const prefix = `${song.id}/version/`;
-    if (path.startsWith(prefix)) {
-      const name = path.slice(prefix.length);
-      const idx = versions.findIndex((v) => v.name === name);
-      if (idx >= 0) return idx;
-    }
-    return 0;
-  });
+  const [activeIdx, setActiveIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -465,20 +455,22 @@ export default function SongLockup({ song }: { song: SongData }) {
     }
     if (!path.startsWith(`${song.id}/`)) return;
     const prefix = `${song.id}/version/`;
+    let targetIdx = 0;
     if (path.startsWith(prefix)) {
       const name = path.slice(prefix.length);
       const idx = versions.findIndex((v) => v.name === name);
-      if (idx >= 0) setActiveIdx(idx);
+      if (idx >= 0) targetIdx = idx;
     }
+    setActiveIdx(targetIdx);
     if (performance.now() > 3000) return;
     if (t != null) {
-      const idx = versions.findIndex((v) => v.name === path.slice(`${song.id}/version/`.length));
-      const key = idx >= 0 ? idx : activeIdx;
-      versionTimesRef.current[key] = t;
+      versionTimesRef.current[targetIdx] = t;
       setCurrentTime(t);
     }
-    setPlaying(true);
-    window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
+    requestAnimationFrame(() => {
+      setPlaying(true);
+      window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
+    });
   }, [song.id]);
 
   // Cross-island singleton: when another lockup starts, pause this one.
