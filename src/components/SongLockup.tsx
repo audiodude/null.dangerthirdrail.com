@@ -464,9 +464,17 @@ export default function SongLockup({ song }: { song: SongData }) {
       articleRef.current.style.animation = 'nr-highlight 3s ease-out 0.3s both';
     }
     if (!path.startsWith(`${song.id}/`)) return;
+    const prefix = `${song.id}/version/`;
+    if (path.startsWith(prefix)) {
+      const name = path.slice(prefix.length);
+      const idx = versions.findIndex((v) => v.name === name);
+      if (idx >= 0) setActiveIdx(idx);
+    }
     if (performance.now() > 3000) return;
     if (t != null) {
-      versionTimesRef.current[activeIdx] = t;
+      const idx = versions.findIndex((v) => v.name === path.slice(`${song.id}/version/`.length));
+      const key = idx >= 0 ? idx : activeIdx;
+      versionTimesRef.current[key] = t;
       setCurrentTime(t);
     }
     setPlaying(true);
