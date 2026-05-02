@@ -23,6 +23,9 @@ versions:
     appendix: >-
       Okay I know it's getting old. But I had one last idea (and also shook the
       style up a bit)
+  - name: Slow Version
+    audio: https://audio.null.dangerthirdrail.com/salsa_shekel_slow.mp3
+    accent: '#10b981'
 lyric: Shekel muh kitty cat
 cover: pressure
 ---

@@ -456,13 +456,21 @@ export default function SongLockup({ song }: { song: SongData }) {
   // suffix), scroll into view and play the highlight animation. Plain #songId
   // hashes still work via CSS :target; this handles #songId/version/Name.
   useEffect(() => {
-    const hash = decodeURIComponent(window.location.hash.slice(1));
-    if (hash !== song.id && !hash.startsWith(`${song.id}/`)) return;
+    const { path, t } = parseHash(window.location.hash);
+    if (path !== song.id && !path.startsWith(`${song.id}/`)) return;
     const el = document.getElementById(song.id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (hash.includes('/') && articleRef.current) {
+    if (path.includes('/') && articleRef.current) {
       articleRef.current.style.animation = 'nr-highlight 3s ease-out 0.3s both';
     }
+    if (!path.startsWith(`${song.id}/`)) return;
+    if (performance.now() > 3000) return;
+    if (t != null) {
+      versionTimesRef.current[activeIdx] = t;
+      setCurrentTime(t);
+    }
+    setPlaying(true);
+    window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
   }, [song.id]);
 
   // Cross-island singleton: when another lockup starts, pause this one.
@@ -557,7 +565,8 @@ export default function SongLockup({ song }: { song: SongData }) {
       e.preventDefault();
       if (playing) {
         const t = Math.floor(audioRef.current?.currentTime ?? 0);
-        const frag = `#${song.id}/version/${encodeURIComponent(active.name)}?t=${t}`;
+        const base = `#${song.id}/version/${encodeURIComponent(active.name)}`;
+        const frag = t >= 5 ? `${base}?t=${t}` : base;
         history.replaceState(null, '', frag);
         onToggle();
         return;
