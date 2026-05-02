@@ -180,6 +180,71 @@ function SongThumbnail({ playing, onToggle, size, cover, accent }: ThumbnailProp
   );
 }
 
+function ShareIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+      <polyline points="16 6 12 2 8 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+function ShareButton({ songId, versionName, title, showTabs, accent }: {
+  songId: string;
+  versionName: string;
+  title: string;
+  showTabs: boolean;
+  accent: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const hash = showTabs
+      ? `#${songId}/version/${encodeURIComponent(versionName)}`
+      : `#${songId}`;
+    const url = `${window.location.origin}${window.location.pathname}${hash}`;
+    const shareTitle = showTabs ? `${title} — ${versionName}` : title;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shareTitle, url });
+        return;
+      } catch {
+        // user cancelled or API failed — fall through to clipboard
+      }
+    }
+
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      onClick={handleShare}
+      aria-label="Share"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        background: 'none',
+        border: 'none',
+        color: copied ? accent : '#9ca3af',
+        cursor: 'pointer',
+        padding: 0,
+        fontSize: 12,
+        fontWeight: 500,
+        fontFamily: 'inherit',
+        transition: 'color 160ms ease',
+      }}
+    >
+      <ShareIcon size={14} />
+      {copied && <span>Copied</span>}
+    </button>
+  );
+}
+
 function Tag({ children }: { children: React.ReactNode }) {
   return (
     <span
@@ -299,10 +364,11 @@ interface VersionTabsProps {
   songId: string;
   versions: SongVersion[];
   activeIdx: number;
+  playing: boolean;
   onSelect: (idx: number) => void;
 }
 
-function VersionTabs({ songId, versions, activeIdx, onSelect }: VersionTabsProps) {
+function VersionTabs({ songId, versions, activeIdx, playing, onSelect }: VersionTabsProps) {
   return (
     <div
       style={{
@@ -321,6 +387,7 @@ function VersionTabs({ songId, versions, activeIdx, onSelect }: VersionTabsProps
             key={i}
             href={`#${songId}/version/${encodeURIComponent(v.name)}`}
             onClick={(e) => {
+              if (!playing && isActive) return;
               e.preventDefault();
               onSelect(i);
             }}
@@ -347,6 +414,15 @@ function VersionTabs({ songId, versions, activeIdx, onSelect }: VersionTabsProps
   );
 }
 
+function parseHash(raw: string): { path: string; t: number | null } {
+  const decoded = decodeURIComponent(raw.replace(/^#/, ''));
+  const qIdx = decoded.indexOf('?');
+  if (qIdx < 0) return { path: decoded, t: null };
+  const path = decoded.slice(0, qIdx);
+  const match = decoded.slice(qIdx).match(/[?&]t=(\d+(?:\.\d+)?)/);
+  return { path, t: match ? parseFloat(match[1]) : null };
+}
+
 export default function SongLockup({ song }: { song: SongData }) {
   const versions = song.versions;
   const hasVersions = versions.length > 0;
@@ -354,10 +430,10 @@ export default function SongLockup({ song }: { song: SongData }) {
 
   const [activeIdx, setActiveIdx] = useState(() => {
     if (typeof window === 'undefined') return 0;
-    const hash = decodeURIComponent(window.location.hash.slice(1));
+    const { path } = parseHash(window.location.hash);
     const prefix = `${song.id}/version/`;
-    if (hash.startsWith(prefix)) {
-      const name = hash.slice(prefix.length);
+    if (path.startsWith(prefix)) {
+      const name = path.slice(prefix.length);
       const idx = versions.findIndex((v) => v.name === name);
       if (idx >= 0) return idx;
     }
@@ -473,6 +549,30 @@ export default function SongLockup({ song }: { song: SongData }) {
     }
   }, [playing, song.id, hasVersions]);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.code !== 'Space') return;
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      e.preventDefault();
+      if (playing) {
+        const t = Math.floor(audioRef.current?.currentTime ?? 0);
+        const frag = `#${song.id}/version/${encodeURIComponent(active.name)}?t=${t}`;
+        history.replaceState(null, '', frag);
+        onToggle();
+        return;
+      }
+      const { path, t } = parseHash(window.location.hash);
+      const versionHash = `${song.id}/version/${active.name}`;
+      if (path === song.id || path === versionHash) {
+        if (t != null && audioRef.current) audioRef.current.currentTime = t;
+        onToggle();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onToggle, playing, song.id, active.name]);
+
   const onSeek = useCallback(
     (ratio: number) => {
       const target = (duration || 0) * ratio;
@@ -510,7 +610,7 @@ export default function SongLockup({ song }: { song: SongData }) {
   return (
     <div id={song.id} className="nr-song" style={{ '--nr-accent': versions[0]?.accent || DEFAULT_ACCENT } as React.CSSProperties}>
       {showTabs && (
-        <VersionTabs songId={song.id} versions={versions} activeIdx={activeIdx} onSelect={onSelectVersion} />
+        <VersionTabs songId={song.id} versions={versions} activeIdx={activeIdx} playing={playing} onSelect={onSelectVersion} />
       )}
 
       <article
@@ -578,6 +678,14 @@ export default function SongLockup({ song }: { song: SongData }) {
                   </span>
                 </>
               )}
+              <span aria-hidden="true" style={{ opacity: 0.5 }}>·</span>
+              <ShareButton
+                songId={song.id}
+                versionName={active.name}
+                title={song.title}
+                showTabs={showTabs}
+                accent={accent}
+              />
             </div>
 
             <h2
