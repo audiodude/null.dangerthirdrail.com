@@ -15,6 +15,15 @@ const songs = defineCollection({
           audio: z.string(),
           accent: z.string().default('#3b82f6'),
           appendix: z.string().optional(),
+          highlights: z
+            .array(
+              z.object({
+                label: z.string(),
+                start: z.number(),
+                end: z.number(),
+              }),
+            )
+            .default([]),
         }),
       )
       .default([]),

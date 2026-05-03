@@ -8,12 +8,20 @@ import CoverArt, { type CoverKey } from './CoverArt';
 
 const PLAY_EVENT = 'null-rail:play';
 const DEFAULT_ACCENT = '#3b82f6';
+let globalPlayingId: string | null = null;
+
+export interface Highlight {
+  label: string;
+  start: number;
+  end: number;
+}
 
 export interface SongVersion {
   name: string;
   audio: string;
   accent: string;
   appendix?: string;
+  highlights: Highlight[];
 }
 
 export interface SongData {
@@ -127,6 +135,7 @@ function SongThumbnail({ playing, onToggle, size, cover, accent }: ThumbnailProp
         background: '#475569',
         borderRadius: 8,
         overflow: 'hidden',
+        outline: 'none',
       }}
     >
       <div style={{ position: 'absolute', inset: 0 }}>
@@ -236,6 +245,7 @@ function ShareButton({ songId, versionName, title, showTabs, accent }: {
         fontSize: 12,
         fontWeight: 500,
         fontFamily: 'inherit',
+        outline: 'none',
         transition: 'color 160ms ease',
       }}
     >
@@ -264,14 +274,19 @@ function Tag({ children }: { children: React.ReactNode }) {
   );
 }
 
+const HIGHLIGHT_COLORS = ['#f59e0b', '#ec4899', '#10b981', '#8b5cf6', '#06b6d4', '#ef4444'];
+
+
 interface ProgressProps {
   progress: number;
   duration: number;
   currentTime: number;
   accent: string;
   playing: boolean;
+  highlights: Highlight[];
   onToggle: () => void;
   onSeek: (ratio: number) => void;
+  onHighlight: (idx: number) => void;
 }
 
 function ProgressPill({
@@ -280,8 +295,10 @@ function ProgressPill({
   currentTime,
   accent,
   playing,
+  highlights,
   onToggle,
   onSeek,
+  onHighlight,
 }: ProgressProps) {
   const ref = useRef<HTMLDivElement>(null);
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -291,71 +308,156 @@ function ProgressPill({
     onSeek(ratio);
   };
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <button
-        onClick={onToggle}
-        aria-label={playing ? 'Pause' : 'Play'}
-        style={{
-          width: 26,
-          height: 26,
-          flexShrink: 0,
-          border: 'none',
-          borderRadius: '50%',
-          background: accent,
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          padding: 0,
-          transition: 'background 200ms ease',
-        }}
-      >
-        {playing ? <PauseIcon size={12} /> : <PlayIcon size={12} />}
-      </button>
-      <span
-        style={{
-          fontSize: 12,
-          color: '#9ca3af',
-          fontVariantNumeric: 'tabular-nums',
-          minWidth: 32,
-        }}
-      >
-        {fmtTime(currentTime)}
-      </span>
-      <div
-        ref={ref}
-        onClick={handleClick}
-        style={{
-          flex: 1,
-          height: 4,
-          background: '#374151',
-          borderRadius: 9999,
-          cursor: 'pointer',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button
+          onClick={onToggle}
+          aria-label={playing ? 'Pause' : 'Play'}
           style={{
-            position: 'absolute',
-            inset: 0,
-            width: `${progress * 100}%`,
+            width: 26,
+            height: 26,
+            flexShrink: 0,
+            border: 'none',
+            borderRadius: '50%',
             background: accent,
-            transition: 'width 120ms linear, background 200ms ease',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            padding: 0,
+            outline: 'none',
+            transition: 'background 200ms ease',
           }}
-        />
+        >
+          {playing ? <PauseIcon size={12} /> : <PlayIcon size={12} />}
+        </button>
+        <span
+          style={{
+            fontSize: 12,
+            color: '#9ca3af',
+            fontVariantNumeric: 'tabular-nums',
+            minWidth: 32,
+          }}
+        >
+          {fmtTime(currentTime)}
+        </span>
+        <div
+          ref={ref}
+          onClick={handleClick}
+          style={{
+            flex: 1,
+            height: 4,
+            background: '#374151',
+            borderRadius: 9999,
+            cursor: 'pointer',
+            position: 'relative',
+            overflow: 'visible',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              width: `${progress * 100}%`,
+              background: accent,
+              borderRadius: 9999,
+              transition: 'width 120ms linear, background 200ms ease',
+              zIndex: 1,
+            }}
+          />
+          {duration > 0 && highlights.map((h, i) => {
+            const left = (h.start / duration) * 100;
+            const width = ((h.end - h.start) / duration) * 100;
+            const color = HIGHLIGHT_COLORS[i % HIGHLIGHT_COLORS.length];
+            const isActive = currentTime >= h.start && currentTime <= h.end;
+            return (
+              <div
+                key={i}
+                onClick={(e) => { e.stopPropagation(); onHighlight(i); }}
+                style={{
+                  position: 'absolute',
+                  top: -3,
+                  left: `${left}%`,
+                  width: `${width}%`,
+                  height: 10,
+                  background: color,
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  opacity: isActive ? 0.7 : 0.4,
+                  transition: 'opacity 160ms',
+                  zIndex: 2,
+                }}
+              />
+            );
+          })}
+          <div
+            style={{
+              position: 'absolute',
+              top: -4,
+              left: `${progress * 100}%`,
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              background: '#fff',
+              border: `2px solid ${accent}`,
+              transform: 'translateX(-50%)',
+              boxSizing: 'border-box',
+              zIndex: 3,
+              opacity: playing || progress > 0 ? 1 : 0,
+              transition: 'opacity 160ms',
+              pointerEvents: 'none',
+            }}
+          />
+        </div>
+        <span
+          style={{
+            fontSize: 12,
+            color: '#9ca3af',
+            fontVariantNumeric: 'tabular-nums',
+            minWidth: 32,
+          }}
+        >
+          {fmtTime(duration)}
+        </span>
       </div>
-      <span
-        style={{
-          fontSize: 12,
-          color: '#9ca3af',
-          fontVariantNumeric: 'tabular-nums',
-          minWidth: 32,
-        }}
-      >
-        {fmtTime(duration)}
-      </span>
+      {highlights.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+          {highlights.map((h, i) => {
+            const color = HIGHLIGHT_COLORS[i % HIGHLIGHT_COLORS.length];
+            const isPlaying = currentTime >= h.start && currentTime <= h.end;
+            return (
+              <button
+                key={i}
+                onClick={() => onHighlight(i)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '5px 10px',
+                  borderRadius: 8,
+                  background: isPlaying ? `color-mix(in srgb, ${color} 15%, #1e293b)` : '#1e293b',
+                  border: `1px solid ${isPlaying ? color : '#334155'}`,
+                  color: isPlaying ? '#fff' : '#d1d5db',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  transition: 'border-color 160ms, color 160ms, background 160ms',
+                }}
+              >
+                {h.label}
+                <span style={{ fontSize: 11, color: isPlaying ? color : '#6b7280', fontVariantNumeric: 'tabular-nums' }}>
+                  {fmtTime(h.start)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -414,13 +516,19 @@ function VersionTabs({ songId, versions, activeIdx, playing, onSelect }: Version
   );
 }
 
-function parseHash(raw: string): { path: string; t: number | null } {
+function parseHash(raw: string): { path: string; t: number | null; h: string | null } {
   const decoded = decodeURIComponent(raw.replace(/^#/, ''));
   const qIdx = decoded.indexOf('?');
-  if (qIdx < 0) return { path: decoded, t: null };
+  if (qIdx < 0) return { path: decoded, t: null, h: null };
   const path = decoded.slice(0, qIdx);
-  const match = decoded.slice(qIdx).match(/[?&]t=(\d+(?:\.\d+)?)/);
-  return { path, t: match ? parseFloat(match[1]) : null };
+  const params = decoded.slice(qIdx);
+  const tMatch = params.match(/[?&]t=(\d+(?:\.\d+)?)/);
+  const hMatch = params.match(/[?&]h=([^&]+)/);
+  return {
+    path,
+    t: tMatch ? parseFloat(tMatch[1]) : null,
+    h: hMatch ? hMatch[1] : null,
+  };
 }
 
 export default function SongLockup({ song }: { song: SongData }) {
@@ -438,7 +546,7 @@ export default function SongLockup({ song }: { song: SongData }) {
 
   const active = hasVersions
     ? versions[activeIdx]
-    : { name: '', audio: '', accent: DEFAULT_ACCENT, appendix: undefined };
+    : { name: '', audio: '', accent: DEFAULT_ACCENT, appendix: undefined, highlights: [] as Highlight[] };
   const accent = active.accent || DEFAULT_ACCENT;
   const articleRef = useRef<HTMLElement>(null);
 
@@ -446,7 +554,7 @@ export default function SongLockup({ song }: { song: SongData }) {
   // suffix), scroll into view and play the highlight animation. Plain #songId
   // hashes still work via CSS :target; this handles #songId/version/Name.
   useEffect(() => {
-    const { path, t } = parseHash(window.location.hash);
+    const { path, t, h } = parseHash(window.location.hash);
     if (path !== song.id && !path.startsWith(`${song.id}/`)) return;
     const el = document.getElementById(song.id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -463,11 +571,19 @@ export default function SongLockup({ song }: { song: SongData }) {
     }
     setActiveIdx(targetIdx);
     if (performance.now() > 3000) return;
-    if (t != null) {
+    const targetVersion = versions[targetIdx];
+    if (h && targetVersion) {
+      const hi = targetVersion.highlights?.find((x) => x.label === h);
+      if (hi) {
+        versionTimesRef.current[targetIdx] = hi.start;
+        setCurrentTime(hi.start);
+      }
+    } else if (t != null) {
       versionTimesRef.current[targetIdx] = t;
       setCurrentTime(t);
     }
     requestAnimationFrame(() => {
+      globalPlayingId = song.id;
       setPlaying(true);
       window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
     });
@@ -497,6 +613,7 @@ export default function SongLockup({ song }: { song: SongData }) {
       if (isFinite(audio.duration)) setDuration(audio.duration);
     };
     const onEnded = () => {
+      globalPlayingId = null;
       setPlaying(false);
       setCurrentTime(0);
       versionTimesRef.current[activeIdx] = 0;
@@ -506,10 +623,8 @@ export default function SongLockup({ song }: { song: SongData }) {
     audio.addEventListener('loadedmetadata', onMeta);
     audio.addEventListener('ended', onEnded);
 
-    // Restore the saved playhead for this version.
-    const target = versionTimesRef.current[activeIdx] ?? 0;
     const restore = () => {
-      audio.currentTime = target;
+      audio.currentTime = versionTimesRef.current[activeIdx] ?? 0;
     };
     if (audio.readyState >= 1) {
       restore();
@@ -550,8 +665,10 @@ export default function SongLockup({ song }: { song: SongData }) {
   const onToggle = useCallback(() => {
     if (!hasVersions) return;
     if (playing) {
+      globalPlayingId = null;
       setPlaying(false);
     } else {
+      globalPlayingId = song.id;
       setPlaying(true);
       window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
     }
@@ -564,23 +681,36 @@ export default function SongLockup({ song }: { song: SongData }) {
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       e.preventDefault();
       if (playing) {
-        const t = Math.floor(audioRef.current?.currentTime ?? 0);
+        const ct = audioRef.current?.currentTime ?? 0;
+        const t = Math.floor(ct);
         const base = `#${song.id}/version/${encodeURIComponent(active.name)}`;
-        const frag = t >= 5 ? `${base}?t=${t}` : base;
+        const inHighlight = active.highlights?.find((x) => ct >= x.start && ct <= x.end);
+        let frag = base;
+        if (inHighlight) {
+          frag = `${base}?h=${encodeURIComponent(inHighlight.label)}`;
+        } else if (t >= 5) {
+          frag = `${base}?t=${t}`;
+        }
         history.replaceState(null, '', frag);
         onToggle();
         return;
       }
-      const { path, t } = parseHash(window.location.hash);
+      if (globalPlayingId) return;
+      const { path, t, h } = parseHash(window.location.hash);
       const versionHash = `${song.id}/version/${active.name}`;
       if (path === song.id || path === versionHash) {
-        if (t != null && audioRef.current) audioRef.current.currentTime = t;
+        if (h && audioRef.current) {
+          const hi = active.highlights?.find((x) => x.label === h);
+          if (hi) audioRef.current.currentTime = hi.start;
+        } else if (t != null && audioRef.current) {
+          audioRef.current.currentTime = t;
+        }
         onToggle();
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onToggle, playing, song.id, active.name]);
+  }, [onToggle, playing, song.id, active.name, active.highlights]);
 
   const onSeek = useCallback(
     (ratio: number) => {
@@ -589,11 +719,28 @@ export default function SongLockup({ song }: { song: SongData }) {
       if (audio) audio.currentTime = target;
       setCurrentTime(target);
       if (!playing) {
+        globalPlayingId = song.id;
         setPlaying(true);
         window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
       }
     },
     [playing, duration, song.id],
+  );
+
+  const onHighlight = useCallback(
+    (idx: number) => {
+      const h = active.highlights?.[idx];
+      if (!h) return;
+      const audio = audioRef.current;
+      if (audio) audio.currentTime = h.start;
+      setCurrentTime(h.start);
+      if (!playing) {
+        globalPlayingId = song.id;
+        setPlaying(true);
+        window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
+      }
+    },
+    [active.highlights, playing, song.id],
   );
 
   // Tab click: save outgoing time, switch, restore. Preserve play state —
@@ -797,8 +944,10 @@ export default function SongLockup({ song }: { song: SongData }) {
           currentTime={currentTime}
           accent={accent}
           playing={playing}
+          highlights={active.highlights || []}
           onToggle={onToggle}
           onSeek={onSeek}
+          onHighlight={onHighlight}
         />
 
         {hasVersions && (

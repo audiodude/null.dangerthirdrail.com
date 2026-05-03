@@ -48,6 +48,22 @@ export default config({
               label: 'Appendix (italic, shown only when this version is active)',
               multiline: true,
             }),
+            highlights: fields.array(
+              fields.object({
+                label: fields.text({ label: 'Label' }),
+                start: fields.integer({ label: 'Start (seconds)' }),
+                end: fields.integer({ label: 'End (seconds)' }),
+              }),
+              {
+                label: 'Highlights',
+                itemLabel: (props) => {
+                  const l = props.fields.label.value || '…';
+                  const s = props.fields.start.value ?? 0;
+                  const e = props.fields.end.value ?? 0;
+                  return `${l} (${s}s–${e}s)`;
+                },
+              },
+            ),
           }),
           {
             label: 'Versions',

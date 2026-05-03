@@ -15,10 +15,7 @@ export default defineConfig({
       allowedHosts: ['.trycloudflare.com'],
     },
     optimizeDeps: {
-      noDiscovery: true,
       include: [
-        'react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime',
-        '@astrojs/react/client.js',
         '@keystatic/core', '@keystatic/core/ui',
         '@keystatic/astro/ui', '@keystatic/astro/api',
       ],

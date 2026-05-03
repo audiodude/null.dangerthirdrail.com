@@ -30,3 +30,8 @@ scripts/.sync-checksums.json
 
 # jetbrains setting folder
 .idea/
+
+# cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/

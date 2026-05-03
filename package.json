@@ -12,7 +12,9 @@
     "astro": "astro",
     "sync-audio": "node scripts/sync-audio.mjs",
     "clear-cache": "node scripts/clear-cache.mjs",
-    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true"
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
+    "test": "cypress run",
+    "test:open": "cypress open"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
@@ -25,5 +27,8 @@
     "marked": "^18.0.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "cypress": "^15.14.2"
   }
 }

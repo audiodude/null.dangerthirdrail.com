@@ -27,6 +27,7 @@ const lockupData: SongData[] = sorted.map((entry) => ({
     audio: resolveAudio(v.audio)!,
     accent: v.accent,
     appendix: v.appendix,
+    highlights: v.highlights ?? [],
   })),
   description: (entry.body ?? '').trim(),
   lyric: entry.data.lyric,

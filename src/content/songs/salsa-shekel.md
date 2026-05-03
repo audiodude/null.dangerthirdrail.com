@@ -10,22 +10,36 @@ versions:
   - name: Sample
     audio: https://audio.null.dangerthirdrail.com/salsa_shekel_sample.mp3
     accent: '#60a5fa'
+    highlights: []
   - name: Full Thing
     audio: https://audio.null.dangerthirdrail.com/salsa_shekel.mp3
     accent: '#3b82f6'
+    highlights:
+      - label: the drop
+        start: 30
+        end: 50
+      - label: bridge
+        start: 90
+        end: 110
   - name: Remix
     audio: https://audio.null.dangerthirdrail.com/salsa_shekel_remix.mp3
     accent: '#3b82f6'
     appendix: Sorry I couldn't help myself....I had to keep going
+    highlights: []
   - name: Salsa Shekel (dub kitty all-stars remix)
     audio: https://audio.null.dangerthirdrail.com/salsa_shekel_dub.mp3
     accent: '#14b8a6'
     appendix: >-
       Okay I know it's getting old. But I had one last idea (and also shook the
       style up a bit)
+    highlights:
+      - label: 1-2-3
+        start: 48
+        end: 78
   - name: Slow Version
     audio: https://audio.null.dangerthirdrail.com/salsa_shekel_slow.mp3
     accent: '#10b981'
+    highlights: []
 lyric: Shekel muh kitty cat
 cover: pressure
 ---
