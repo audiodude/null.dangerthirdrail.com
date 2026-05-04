@@ -159,6 +159,29 @@ describe('Space bar', () => {
   });
 });
 
+describe('Seek fragment updates', () => {
+  it('clicking the progress bar writes ?t=N to the fragment', () => {
+    cy.visit('/');
+    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
+    cy.get('#salsa-shekel audio', { timeout: 5000 }).should(($audio) => {
+      expect(($audio[0] as HTMLAudioElement).duration).to.be.at.least(5);
+    });
+    cy.get('#salsa-shekel [data-testid="progress-bar"]').click('right');
+    cy.location('hash').should('match', /\?t=\d+/);
+  });
+
+  it('clicking a highlight chip writes &h= to the fragment', () => {
+    cy.visit('/#salsa-shekel/version/Full%20Thing');
+    cy.get('#salsa-shekel button[aria-label="Pause"]', { timeout: 5000 }).should('exist');
+    cy.get('body').type(' ');
+    cy.get('#salsa-shekel button[aria-label="Play"]').should('exist');
+
+    cy.get('#salsa-shekel button').contains('the drop').click();
+    cy.location('hash').should('contain', 'h=the%20drop');
+  });
+});
+
 describe('Highlights', () => {
   beforeEach(() => {
     cy.visit('/#salsa-shekel/version/Full%20Thing');

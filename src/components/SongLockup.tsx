@@ -344,6 +344,7 @@ function ProgressPill({
         </span>
         <div
           ref={ref}
+          data-testid="progress-bar"
           onClick={handleClick}
           style={{
             flex: 1,

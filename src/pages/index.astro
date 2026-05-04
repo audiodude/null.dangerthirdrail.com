@@ -190,6 +190,17 @@ const lockupData: SongData[] = sorted.map((entry) => ({
 </style>
 
 <script>
+  // Scroll to the target song on load so client:visible triggers hydration.
+  // The hash may be #songId/version/Name?t=N — extract the songId prefix.
+  {
+    const raw = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+    const songId = raw.split('/')[0];
+    if (songId) {
+      const el = document.getElementById(songId);
+      if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+  }
+
   const btn = document.getElementById('share-site');
   btn?.addEventListener('click', async () => {
     const url = window.location.origin + window.location.pathname;
