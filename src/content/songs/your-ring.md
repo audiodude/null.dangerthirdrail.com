@@ -9,19 +9,19 @@ tags:
   - fusion
 versions:
   - name: Sample
-    audio: your_ring_sample.mp3
+    audio: https://audio.null.dangerthirdrail.com/your_ring_sample.mp3
     accent: '#6366f1'
     appendix: >-
       The staring place again. I hummed with pitch this time, not just
       percussively like before.
     highlights: []
   - name: Your Ring
-    audio: your_ring.mp3
+    audio: https://audio.null.dangerthirdrail.com/your_ring.mp3
     accent: '#14b8a6'
     appendix: I really like the different dynamics in this one.
     highlights: []
   - name: Your Ring (neo-soul)
-    audio: your_ring_neo_soul.mp3
+    audio: https://audio.null.dangerthirdrail.com/your_ring_neo_soul.mp3
     accent: '#3b82f6'
     appendix: >-
       For one iteration, I accidentally dropped the initial sample, so it went
@@ -29,7 +29,7 @@ versions:
       the other iterations sounded very much like the final.
     highlights: []
   - name: Your Ring (VC-Allstars Remix)
-    audio: your_ring_80s.mp3
+    audio: https://audio.null.dangerthirdrail.com/your_ring_80s.mp3
     accent: '#3b82f6'
     appendix: >-
       Tried the "cover" feature for the first time. It used my full version
@@ -38,7 +38,7 @@ versions:
       style is way too country and not enough pop.
     highlights: []
   - name: Your Ring (wildcard mix)
-    audio: your_ring_wildcard.mp3
+    audio: https://audio.null.dangerthirdrail.com/your_ring_wildcard.mp3
     accent: '#3b82f6'
     appendix: >-
       I think I'm going to try to make really out there versions where i
