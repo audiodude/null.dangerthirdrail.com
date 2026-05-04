@@ -718,13 +718,23 @@ export default function SongLockup({ song }: { song: SongData }) {
       const audio = audioRef.current;
       if (audio) audio.currentTime = target;
       setCurrentTime(target);
+      const t = Math.floor(target);
+      const base = `#${song.id}/version/${encodeURIComponent(active.name)}`;
+      const inHighlight = active.highlights?.find((x) => target >= x.start && target <= x.end);
+      let frag = base;
+      if (inHighlight) {
+        frag = `${base}?h=${encodeURIComponent(inHighlight.label)}`;
+      } else if (t >= 5) {
+        frag = `${base}?t=${t}`;
+      }
+      history.replaceState(null, '', frag);
       if (!playing) {
         globalPlayingId = song.id;
         setPlaying(true);
         window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
       }
     },
-    [playing, duration, song.id],
+    [playing, duration, song.id, active.name, active.highlights],
   );
 
   const onHighlight = useCallback(
@@ -734,13 +744,15 @@ export default function SongLockup({ song }: { song: SongData }) {
       const audio = audioRef.current;
       if (audio) audio.currentTime = h.start;
       setCurrentTime(h.start);
+      const base = `#${song.id}/version/${encodeURIComponent(active.name)}`;
+      history.replaceState(null, '', `${base}?h=${encodeURIComponent(h.label)}`);
       if (!playing) {
         globalPlayingId = song.id;
         setPlaying(true);
         window.dispatchEvent(new CustomEvent(PLAY_EVENT, { detail: { id: song.id } }));
       }
     },
-    [active.highlights, playing, song.id],
+    [active.highlights, playing, song.id, active.name],
   );
 
   // Tab click: save outgoing time, switch, restore. Preserve play state —
