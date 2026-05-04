@@ -10,7 +10,7 @@ tags:
 versions:
   - name: Sample
     audio: https://audio.null.dangerthirdrail.com/your_ring_sample.mp3
-    accent: '#6366f1'
+    accent: '#f59e0b'
     appendix: >-
       The staring place again. I hummed with pitch this time, not just
       percussively like before.
