@@ -7,9 +7,25 @@ tags:
   - rock
   - drama
 versions:
-  - name: Full Song
+  - name: First Try
     audio: https://audio.null.dangerthirdrail.com/nihilism.mp3
     accent: '#f59e0b'
+    highlights: []
+  - name: Indie (better)
+    audio: https://audio.null.dangerthirdrail.com/nihilism_indie.mp3
+    accent: '#3b82f6'
+    appendix: >-
+      Now after I said all that, it was really the length and ambitious style
+      soup that I gave it that was the problem. This one was prompted with the
+      lyrics simplified (stage directions like "<fingerstyle guitar>" removed)
+      and the prompt was simply
+
+
+      >Subtle indie pop rock with a lot of feeling.
+
+
+      I guess music generators are a lot like all LLMs. They can't stray too far
+      from their training.
     highlights: []
 cover: pressure
 ---
