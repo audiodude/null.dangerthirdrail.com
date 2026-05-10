@@ -48,4 +48,11 @@ versions:
 lyric: The road to hell is paved with smiles
 cover: server
 ---
-Same "stuck in my head just hum into the mic" process here. I think the workflow I'm coming around to is successive iterations. Don't bother writing lyrics until the style prompt results in a genre/feel that fits your vision for the song. Don't write too many lyrics if the singing is off, try to rectify it. Listen to the songs, immediately disqualify ones that start wrong or have awkard melodies. Don't listen too much though, because your ear goes dead to the subtleties. I've even done some "palate cleansing" and listened to completely different genres in between checking versions. Then it's just putting on finishing touches like adding bridges and repeating choruses the right number of times. Violin!
+Same "stuck in my head just hum into the mic" process here. I think the workflow I'm coming around to is successive iterations.
+
+- Don't bother writing lyrics until the style prompt results in a genre/feel that fits your vision for the song.
+- Don't write too many lyrics if the singing is off, try to rectify it.
+- Listen to the songs, immediately disqualify ones that start wrong or have awkard melodies.
+- Don't listen too much though, because your ear goes dead to the subtleties. I've even done some "palate cleansing" and listened to completely different genres in between checking versions.
+
+Then it's just putting on finishing touches like adding bridges and repeating choruses the right number of times. Violin!
