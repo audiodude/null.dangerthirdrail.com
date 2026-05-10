@@ -4,6 +4,7 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SongLockup, { type SongData } from '../components/SongLockup';
+import { marked } from 'marked';
 
 function resolveAudio(value?: string): string | undefined {
   if (!value) return undefined;
@@ -29,7 +30,7 @@ const lockupData: SongData[] = sorted.map((entry) => ({
     appendix: v.appendix,
     highlights: v.highlights ?? [],
   })),
-  description: (entry.body ?? '').trim(),
+  description: marked.parse((entry.body ?? '').trim(), { async: false }) as string,
   lyric: entry.data.lyric,
   cover: entry.data.cover,
 }));

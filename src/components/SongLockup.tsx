@@ -891,7 +891,8 @@ export default function SongLockup({ song }: { song: SongData }) {
 
           <div className="nr-lockup-body" style={{ gridArea: 'body', minWidth: 0 }}>
             {song.description && (
-              <p
+              <div
+                className="nr-lockup-description"
                 style={{
                   color: '#d1d5db',
                   fontSize: 15,
@@ -899,9 +900,8 @@ export default function SongLockup({ song }: { song: SongData }) {
                   margin: '10px 0 0',
                   textWrap: 'pretty',
                 }}
-              >
-                {song.description}
-              </p>
+                dangerouslySetInnerHTML={{ __html: song.description }}
+              />
             )}
 
             {song.lyric && (

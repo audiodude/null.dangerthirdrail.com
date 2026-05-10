@@ -229,6 +229,29 @@ describe('Share', () => {
   });
 });
 
+describe('Description markdown', () => {
+  beforeEach(() => {
+    cy.visit('/');
+  });
+
+  it('renders italics as <em>', () => {
+    cy.get('#sample .nr-lockup-description em').should('contain.text', 'insane');
+  });
+
+  it('renders bold as <strong>', () => {
+    cy.get('#sample .nr-lockup-description strong').should('contain.text', 'nine second clip');
+  });
+
+  it('wraps body text in a <p> tag', () => {
+    cy.get('#sample .nr-lockup-description p').should('exist');
+  });
+
+  it('does not show raw markdown asterisks', () => {
+    cy.get('#sample .nr-lockup-description').should('not.contain.text', '*insane*');
+    cy.get('#sample .nr-lockup-description').should('not.contain.text', '**nine');
+  });
+});
+
 describe('Progress bar', () => {
   it('shows playhead dot when playing', () => {
     cy.visit('/');
