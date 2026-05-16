@@ -1,7 +1,7 @@
 // Procedural SVG cover art for each song. Selected by the `cover` enum
 // in song frontmatter. Inline SVG, no external assets.
 
-export type CoverKey = 'pressure' | 'server' | 'island' | 'trackpad' | 'found';
+export type CoverKey = 'pressure' | 'server' | 'island' | 'trackpad' | 'found' | 'waveform' | 'vinyl' | 'circuit' | 'constellation' | 'prism';
 
 function ArtPressure() {
   return (
@@ -168,6 +168,172 @@ function ArtFound() {
   );
 }
 
+function ArtWaveform() {
+  const bars = Array.from({ length: 32 }).map((_, i) => {
+    const h = 8 + Math.abs(Math.sin(i * 0.4) * Math.cos(i * 0.15)) * 52;
+    return { x: 3 + i * 3, h };
+  });
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <rect width="100" height="100" fill="#0f172a" />
+      {bars.map((b, i) => (
+        <rect
+          key={i}
+          x={b.x}
+          y={50 - b.h / 2}
+          width="2"
+          height={b.h}
+          fill="#a855f7"
+          opacity={0.5 + (b.h / 60) * 0.5}
+          rx="1"
+        />
+      ))}
+      <line x1="0" y1="50" x2="100" y2="50" stroke="#6366f1" strokeWidth="0.3" opacity="0.6" />
+    </svg>
+  );
+}
+
+function ArtVinyl() {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <rect width="100" height="100" fill="#1c1917" />
+      <circle cx="50" cy="50" r="42" fill="#292524" />
+      {[10, 15, 20, 25, 30, 35, 40].map((r, i) => (
+        <circle
+          key={i}
+          cx="50"
+          cy="50"
+          r={r}
+          fill="none"
+          stroke="#44403c"
+          strokeWidth="0.5"
+          opacity={i % 2 === 0 ? 0.8 : 0.4}
+        />
+      ))}
+      <circle cx="50" cy="50" r="8" fill="#dc2626" />
+      <circle cx="50" cy="50" r="2" fill="#1c1917" />
+      <path
+        d="M 50 8 A 42 42 0 0 1 92 50"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="0.4"
+        opacity="0.15"
+      />
+    </svg>
+  );
+}
+
+function ArtCircuit() {
+  const traces = [
+    'M10,20 H40 V50 H70',
+    'M20,80 V60 H50 V30 H80',
+    'M80,15 V40 H60 V70 H90',
+    'M5,50 H25 V75 H45',
+    'M55,85 H75 V60',
+    'M30,10 V35 H55',
+  ];
+  const nodes = [
+    { x: 40, y: 20 }, { x: 70, y: 50 }, { x: 20, y: 80 },
+    { x: 50, y: 30 }, { x: 80, y: 40 }, { x: 60, y: 70 },
+    { x: 25, y: 75 }, { x: 75, y: 60 }, { x: 55, y: 85 },
+  ];
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <rect width="100" height="100" fill="#042f2e" />
+      {traces.map((d, i) => (
+        <path
+          key={i}
+          d={d}
+          fill="none"
+          stroke="#14b8a6"
+          strokeWidth="0.8"
+          opacity="0.6"
+        />
+      ))}
+      {nodes.map((n, i) => (
+        <g key={i}>
+          <circle cx={n.x} cy={n.y} r="2.5" fill="#0f766e" />
+          <circle cx={n.x} cy={n.y} r="1.2" fill="#5eead4" />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function ArtConstellation() {
+  const stars = [
+    { x: 15, y: 20, s: 1.5 }, { x: 35, y: 15, s: 1 }, { x: 55, y: 28, s: 2 },
+    { x: 75, y: 12, s: 1.2 }, { x: 88, y: 35, s: 1 }, { x: 70, y: 55, s: 1.8 },
+    { x: 45, y: 50, s: 1.3 }, { x: 25, y: 60, s: 1 }, { x: 60, y: 75, s: 1.5 },
+    { x: 30, y: 82, s: 1.2 }, { x: 82, y: 78, s: 1 }, { x: 12, y: 45, s: 0.8 },
+  ];
+  const lines = [
+    [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6],
+    [6, 7], [6, 2], [5, 8], [8, 10], [7, 9], [0, 11],
+  ];
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <rect width="100" height="100" fill="#0c0a20" />
+      {Array.from({ length: 40 }).map((_, i) => (
+        <circle
+          key={`bg-${i}`}
+          cx={(i * 17 + 3) % 100}
+          cy={(i * 23 + 7) % 100}
+          r="0.4"
+          fill="#fff"
+          opacity="0.2"
+        />
+      ))}
+      {lines.map(([a, b], i) => (
+        <line
+          key={i}
+          x1={stars[a].x}
+          y1={stars[a].y}
+          x2={stars[b].x}
+          y2={stars[b].y}
+          stroke="#6366f1"
+          strokeWidth="0.4"
+          opacity="0.5"
+        />
+      ))}
+      {stars.map((s, i) => (
+        <circle key={i} cx={s.x} cy={s.y} r={s.s} fill="#e0e7ff" opacity="0.9" />
+      ))}
+    </svg>
+  );
+}
+
+function ArtPrism() {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+      <rect width="100" height="100" fill="#0f172a" />
+      <line x1="5" y1="50" x2="35" y2="50" stroke="#fff" strokeWidth="1.5" opacity="0.9" />
+      <polygon points="35,30 35,70 65,50" fill="none" stroke="#94a3b8" strokeWidth="0.8" />
+      <polygon points="35,30 35,70 65,50" fill="#1e293b" opacity="0.6" />
+      {[
+        { y: 38, color: '#ef4444' },
+        { y: 42, color: '#f97316' },
+        { y: 46, color: '#eab308' },
+        { y: 50, color: '#22c55e' },
+        { y: 54, color: '#3b82f6' },
+        { y: 58, color: '#6366f1' },
+        { y: 62, color: '#a855f7' },
+      ].map((ray, i) => (
+        <line
+          key={i}
+          x1="65"
+          y1="50"
+          x2="98"
+          y2={ray.y}
+          stroke={ray.color}
+          strokeWidth="1.2"
+          opacity="0.75"
+        />
+      ))}
+    </svg>
+  );
+}
+
 export default function CoverArt({ cover }: { cover: CoverKey }) {
   switch (cover) {
     case 'pressure':
@@ -180,5 +346,15 @@ export default function CoverArt({ cover }: { cover: CoverKey }) {
       return <ArtTrackpad />;
     case 'found':
       return <ArtFound />;
+    case 'waveform':
+      return <ArtWaveform />;
+    case 'vinyl':
+      return <ArtVinyl />;
+    case 'circuit':
+      return <ArtCircuit />;
+    case 'constellation':
+      return <ArtConstellation />;
+    case 'prism':
+      return <ArtPrism />;
   }
 }

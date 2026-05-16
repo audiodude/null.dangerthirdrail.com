@@ -28,7 +28,7 @@ const songs = defineCollection({
       )
       .default([]),
     lyric: z.string().optional(),
-    cover: z.enum(['pressure', 'server', 'island', 'trackpad', 'found']),
+    cover: z.enum(['pressure', 'server', 'island', 'trackpad', 'found', 'waveform', 'vinyl', 'circuit', 'constellation', 'prism']),
   }),
 });
 
