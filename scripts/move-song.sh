@@ -20,11 +20,11 @@ name="${2%.mp3}"
 songs_dir="$(cd "$(dirname "$0")/../public/songs" && pwd)"
 
 shopt -s nullglob
-files=(~/Downloads/$glob*.wav ~/Downloads/$glob*.WAV)
+files=(~/Downloads/*$glob*.wav ~/Downloads/*$glob*.WAV)
 shopt -u nullglob
 
 if [[ ${#files[@]} -eq 0 ]]; then
-  echo "No WAV files matching '$glob*' in ~/Downloads"
+  echo "No WAV files matching '*$glob*' in ~/Downloads"
   exit 1
 fi
 
@@ -38,6 +38,20 @@ fi
 src="${files[0]}"
 wav_dest="$songs_dir/${name}.wav"
 mp3_dest="$songs_dir/${name}.mp3"
+
+existing=()
+[[ -e "$wav_dest" ]] && existing+=("$wav_dest")
+[[ -e "$mp3_dest" ]] && existing+=("$mp3_dest")
+
+if [[ ${#existing[@]} -gt 0 ]]; then
+  echo "Warning: the following file(s) already exist and will be overwritten:"
+  printf '  %s\n' "${existing[@]}"
+  read -r -p "Continue? [y/N] " reply
+  if [[ ! "$reply" =~ ^[Yy]$ ]]; then
+    echo "Aborted."
+    exit 1
+  fi
+fi
 
 echo "Moving: $src -> $wav_dest"
 mv "$src" "$wav_dest"
