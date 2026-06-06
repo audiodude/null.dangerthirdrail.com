@@ -37,6 +37,13 @@ versions:
       I like how this version is basically diametrically opposed to the first
       Suno version.
     highlights: []
+  - name: Breakbeat Mashup
+    audio: https://audio.null.dangerthirdrail.com/shekel_drift.mp3
+    accent: '#60a5fa'
+    appendix: >-
+      I made a breakbeat downtemp thing and tried the Suno *mashup* feature for
+      the first time. This is what came out.
+    highlights: []
 lyric: Shekel! Shekel, Shekel, Shekel!
 cover: prism
 ---
