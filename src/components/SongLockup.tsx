@@ -777,7 +777,7 @@ export default function SongLockup({ song }: { song: SongData }) {
   const thumbSize = 128;
 
   return (
-    <div id={song.id} className="nr-song" style={{ '--nr-accent': versions[0]?.accent || DEFAULT_ACCENT } as React.CSSProperties}>
+    <div id={song.id} className="nr-song" style={{ '--nr-accent': accent } as React.CSSProperties}>
       {showTabs && (
         <VersionTabs songId={song.id} versions={versions} activeIdx={activeIdx} playing={playing} onSelect={onSelectVersion} />
       )}
