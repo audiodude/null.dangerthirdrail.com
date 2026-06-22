@@ -59,6 +59,56 @@ Each song `.md` has YAML frontmatter:
 
 The markdown body is the song's description.
 
+## Running from an iPad
+
+The whole add-a-song flow can be driven from Safari on an iPad — no SSH/terminal
+typing — via a dev-only **studio** control panel served at `/studio` on the same
+dev server as Keystatic, exposed through a named Cloudflare tunnel.
+
+```sh
+npm run ipad
+```
+
+This starts `astro dev`, brings up the tunnel, and prints a tokenized link (plus
+a QR code if `qrencode` is installed). Open it on the iPad and you get:
+
+- **Drop a wav** — drag a file in (from Suno/Files); the box encodes it to mp3
+  with `lame` into `public/songs/`.
+- **From ~/Downloads** — list/select a wav already synced down via Dropbox and
+  run the same move-and-encode flow as `scripts/move-song.sh`.
+- **Sync / Publish / Clear cache** — buttons for `npm run sync-audio`,
+  `scripts/publish-song.sh` (sync + commit + push), and `npm run clear-cache`.
+- Links to **Keystatic** (`/keystatic`) and the live preview, all on the one URL.
+
+After uploading, the panel shows the filename to paste into the version's
+`audio:` field in Keystatic.
+
+### One-time tunnel setup
+
+The panel runs on your box (where Dropbox and git live); the iPad only loads the
+URL. Requires [`cloudflared`](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+(and optionally `qrencode` for the QR). Your domain is already on Cloudflare:
+
+```sh
+cloudflared tunnel login
+cloudflared tunnel create null-studio
+cloudflared tunnel route dns null-studio studio.null.dangerthirdrail.com
+cp cloudflared/config.example.yml ~/.cloudflared/config.yml
+# edit the tunnel UUID + credentials path in that file
+```
+
+The tunnel hostname (`studio.null.dangerthirdrail.com`) is allowed in
+`astro.config.mjs` (`vite.server.allowedHosts`). Override the defaults with
+`STUDIO_HOST` / `STUDIO_TUNNEL` env vars if you use different names.
+
+### Security
+
+The tunnel URL is public, so every `/studio` API call requires a token
+(`STUDIO_TOKEN`). `npm run ipad` generates one on first run, persists it to
+`~/.config/null-rail/studio-token`, and embeds it in the printed link (`#token=…`,
+stored in the iPad's `localStorage`). Without a valid token the API returns 401.
+The panel is dev-only and never included in production builds.
+
 ## Deploying
 
 Push to `main` triggers a GitHub Actions workflow that builds with `NODE_ENV=production` and deploys to Cloudflare Pages via wrangler.

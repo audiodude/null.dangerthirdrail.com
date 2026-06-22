@@ -1,0 +1,18 @@
+# Named-tunnel config for the iPad studio. Copy to ~/.cloudflared/config.yml
+# and fill in your tunnel UUID + credentials path. One-time setup:
+#
+#   cloudflared tunnel login
+#   cloudflared tunnel create null-studio
+#   cloudflared tunnel route dns null-studio studio.null.dangerthirdrail.com
+#   cp cloudflared/config.example.yml ~/.cloudflared/config.yml
+#   # edit the two paths below, then:  npm run ipad
+#
+# `cloudflared tunnel create` prints the UUID and writes the credentials JSON.
+
+tunnel: null-studio
+credentials-file: /home/YOU/.cloudflared/REPLACE-WITH-TUNNEL-UUID.json
+
+ingress:
+  - hostname: studio.null.dangerthirdrail.com
+    service: http://127.0.0.1:4321
+  - service: http_status:404
