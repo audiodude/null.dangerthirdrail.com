@@ -19,6 +19,11 @@ export default defineConfig({
         '@keystatic/core', '@keystatic/core/ui',
         '@keystatic/astro/ui', '@keystatic/astro/api',
       ],
+      // Keystatic's injected API route entrypoint gets resolved through the
+      // client dep optimizer at startup, racing the cache load and forcing a
+      // full (nondeterministic) re-optimization + reload on every dev start.
+      // It's a server-only module, so keep it out of the client optimizer.
+      exclude: ['@keystatic/astro/internal/keystatic-api.js'],
     },
   },
 });
