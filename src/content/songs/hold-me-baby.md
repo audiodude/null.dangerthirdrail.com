@@ -14,4 +14,4 @@ versions:
 lyric: Hold me baby!
 cover: constellation
 ---
-My friend Mark got engaged today! In honor of the occassion, I guess I decided to write a sappy, sappy love song. Started with a vocal sample (not pictured).
+A friend got engaged today! In honor of the occassion, I guess I decided to write a sappy, sappy love song. Started with a vocal sample (not pictured).
