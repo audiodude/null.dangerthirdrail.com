@@ -11,6 +11,11 @@ versions:
     audio: https://audio.null.dangerthirdrail.com/hold_me_baby.mp3
     accent: '#3b82f6'
     highlights: []
+  - name: sample
+    audio: https://audio.null.dangerthirdrail.com/hold_me_baby_sample.mp3
+    accent: '#3b82f6'
+    appendix: The original sample I hummed into Suno
+    highlights: []
 lyric: Hold me baby!
 cover: constellation
 ---
