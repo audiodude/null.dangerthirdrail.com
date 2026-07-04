@@ -11,6 +11,7 @@ versions:
     audio: https://audio.null.dangerthirdrail.com/hold_me_baby.mp3
     accent: '#3b82f6'
     highlights: []
+lyric: Hold me baby!
 cover: constellation
 ---
-My friend Mark got engaged today! In honor of the occassion, he emailed me some random lyrics that he had wrote. I pressed some buttons and Suno did the rest. Kind of a collaboration.
+My friend Mark got engaged today! In honor of the occassion, I guess I decided to write a sappy, sappy love song. Started with a vocal sample (not pictured).
