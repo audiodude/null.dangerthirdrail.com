@@ -789,11 +789,9 @@ export default function SongLockup({ song }: { song: SongData }) {
           background: '#1f2937',
           // Thick top stripe in the active version's accent so the highlighted
           // tab visually bleeds into the lockup. Sides/bottom stay thin gray.
-          borderWidth: showTabs ? '4px 1px 1px 1px' : '1px',
+          borderWidth: '4px 1px 1px 1px',
           borderStyle: 'solid',
-          borderColor: showTabs
-            ? `${accent} #374151 #374151 #374151`
-            : '#374151',
+          borderColor: `${accent} #374151 #374151 #374151`,
           borderRadius: 12,
           borderTopLeftRadius: showTabs ? 0 : 12,
           padding: '20px 20px 12px',
