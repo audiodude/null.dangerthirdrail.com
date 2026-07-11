@@ -24,7 +24,7 @@ npm run preview
 
 ## Audio workflow
 
-Local audio masters live in the gitignored `public/songs/` directory. It may be a regular directory or a symlink to external storage. Each version's `audio:` field starts as a path relative to `public/songs/`, then gets rewritten to an R2 URL on sync.
+Local audio masters live in the gitignored `public/songs/` directory. It may be a regular directory or a symlink to external storage. Each version's `audio:` field starts as a path relative to `public/songs/`, then gets rewritten to an R2 URL on sync. The `.mp3` extension may be omitted from local paths; it is added automatically when no extension is present.
 
 ```sh
 npm run sync-audio          # upload new/changed mp3s to R2, rewrite frontmatter
@@ -57,7 +57,7 @@ Set in `~/.secrets` (sourced by shell):
 
 1. Create the entry in Keystatic, or add a `.md` file to `src/content/songs/`.
 2. Put the MP3s in `public/songs/`.
-3. Set each version's `audio:` field to its relative path, such as `my_song.mp3` or `my_song/v2.mp3`.
+3. Set each version's `audio:` field to its relative path, such as `my_song` or `my_song/v2`. An explicit extension is also accepted.
 4. Run `npm run sync-audio` to upload the files and rewrite their frontmatter URLs.
 5. Commit and push. The pre-push hook verifies that all audio is synced.
 
@@ -82,7 +82,7 @@ Each item in `versions` supports:
 | Field | Type | Notes |
 |:------|:-----|:------|
 | `name` | string | Version label |
-| `audio` | string | Local path before sync or public R2 URL afterward |
+| `audio` | string | Local path before sync (`.mp3` optional) or public R2 URL afterward |
 | `accent` | string | CSS color used by the player; defaults to `#3b82f6` |
 | `appendix` | string (optional) | Italic note shown while this version is active |
 | `highlights` | array | Timestamp ranges with `label`, `start`, and `end` in seconds |

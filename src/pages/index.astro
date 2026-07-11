@@ -4,13 +4,15 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SongLockup, { type SongData } from '../components/SongLockup';
+import { withDefaultAudioExtension } from '../lib/audio-path.js';
 import { marked } from 'marked';
 
 function resolveAudio(value?: string): string | undefined {
   if (!value) return undefined;
   if (value.startsWith('http://') || value.startsWith('https://')) return value;
-  if (value.startsWith('/')) return value;
-  return `/songs/${value}`;
+  const path = withDefaultAudioExtension(value);
+  if (path.startsWith('/')) return path;
+  return `/songs/${path}`;
 }
 
 const songs = await getCollection('songs');

@@ -27,7 +27,7 @@ export default config({
             audio: fields.text({
               label: 'Audio path or URL',
               description:
-                'Path under public/songs/ (e.g. skin/v2.mp3) or full URL after sync.',
+                'Path under public/songs/ (e.g. skin/v2; .mp3 is optional) or full URL after sync.',
             }),
             accent: fields.select({
               label: 'Accent color',

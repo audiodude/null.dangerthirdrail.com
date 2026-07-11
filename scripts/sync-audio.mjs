@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { withDefaultAudioExtension } from '../src/lib/audio-path.js';
 
 const SONGS_DIR = 'src/content/songs';
 const PUBLIC_AUDIO_DIR = 'public/songs';
@@ -50,9 +51,10 @@ async function md5(filePath) {
 // Maps the frontmatter `audio:` value to the relative key we use for both the
 // local file under public/songs/ and the R2 object key.
 function toRelativeKey(audio) {
-  if (audio.startsWith('/songs/')) return audio.slice('/songs/'.length);
-  if (audio.startsWith('/')) return audio.slice(1);
-  return audio;
+  let key = audio;
+  if (key.startsWith('/songs/')) key = key.slice('/songs/'.length);
+  else if (key.startsWith('/')) key = key.slice(1);
+  return withDefaultAudioExtension(key);
 }
 
 // Match every `audio:` line in YAML frontmatter, allowing leading whitespace
