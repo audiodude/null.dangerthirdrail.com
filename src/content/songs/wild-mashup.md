@@ -18,7 +18,7 @@ versions:
       the lyrics are so trash....
     highlights: []
   - name: Burning Lava
-    audio: wild_mash_burning_lava
+    audio: https://audio.null.dangerthirdrail.com/wild_mash_burning_lava.mp3
     accent: '#ef4444'
     appendix: Okay I couldn't help myself. This is the "real" version, final output.
     highlights: []
