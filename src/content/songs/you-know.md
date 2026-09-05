@@ -12,6 +12,13 @@ versions:
     audio: https://audio.null.dangerthirdrail.com/you_know.mp3
     accent: '#f97316'
     highlights: []
+  - name: You Know (britpop)
+    audio: https://audio.null.dangerthirdrail.com/you_know_britpop.mp3
+    accent: '#f97316'
+    appendix: >-
+      I either really like the song, or I'm a masochist, because I generated
+      this britpop inspired version as well
+    highlights: []
 lyric: You know you know you know
 cover: prism
 ---
