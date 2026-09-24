@@ -10,11 +10,11 @@
 //   CLOUDFLARE_API_TOKEN  required (Workers R2 Storage:Edit + Account:Read)
 //   CLOUDFLARE_ACCOUNT_ID required for wrangler r2
 
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { withDefaultAudioExtension } from '../src/lib/audio-path.js';
 
 const SONGS_DIR = 'src/content/songs';
@@ -35,8 +35,11 @@ const MANIFEST_PATH = 'scripts/.sync-checksums.json';
 const isUrl = (s) => s.startsWith('http://') || s.startsWith('https://');
 
 async function loadManifest() {
-  try { return JSON.parse(await readFile(MANIFEST_PATH, 'utf8')); }
-  catch { return {}; }
+  try {
+    return JSON.parse(await readFile(MANIFEST_PATH, 'utf8'));
+  } catch {
+    return {};
+  }
 }
 
 async function saveManifest(manifest) {
@@ -64,7 +67,17 @@ const audioLineRe = /^([ \t]*)audio:[ \t]+(["']?)([^\n\r"']+?)\2[ \t]*$/gm;
 function upload(localPath, relKey) {
   execFileSync(
     'npx',
-    ['wrangler', 'r2', 'object', 'put', `${R2_BUCKET}/${relKey}`, '--file', localPath, '--remote'],
+    [
+      '--yes',
+      'wrangler',
+      'r2',
+      'object',
+      'put',
+      `${R2_BUCKET}/${relKey}`,
+      '--file',
+      localPath,
+      '--remote',
+    ],
     { stdio: 'inherit' },
   );
 }
@@ -97,7 +110,9 @@ async function processFile(mdPath, manifest) {
         if (existsSync(localPath)) {
           const hash = await md5(localPath);
           if (hash !== manifest[relKey]) {
-            console.log(`  ↑ (changed) ${localPath}  →  r2://${R2_BUCKET}/${relKey}`);
+            console.log(
+              `  ↑ (changed) ${localPath}  →  r2://${R2_BUCKET}/${relKey}`,
+            );
             upload(localPath, relKey);
             manifest[relKey] = hash;
             synced++;
