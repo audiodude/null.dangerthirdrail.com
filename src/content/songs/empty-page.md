@@ -25,3 +25,7 @@ lyric: |-
 cover: constellation
 ---
 No lofty goals for this one, and no real process changes. I just played some guitar, and thought maybe I could just work with it in Suno, which I did. I like how it came out.
+
+I actually had a kind of weird artistic idea to have a "pre-chorus" in the middle of the verse, which I was calling a "verse interlude", and then have the first part of the next verse as the end of the previous verse....if that makes sense (narrator: it doesn't).
+
+Suno mangled that idea, but I really like the feel of this result so 🤷‍♂️.
