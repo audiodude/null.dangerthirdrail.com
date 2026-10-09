@@ -19,7 +19,10 @@ versions:
     appendix: >-
       I like the chorus melody better, but the keys (organ/piano) are a little
       weird
-    highlights: []
+    highlights:
+      - label: Better chorus
+        start: 88
+        end: 99
   - name: sample
     audio: https://audio.null.dangerthirdrail.com/need_it_sample.mp3
     accent: '#f97316'
