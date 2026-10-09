@@ -6,6 +6,7 @@ tags:
   - indie.rock
   - sample
   - sad
+  - original.lyrics
 versions:
   - name: Empty Page
     audio: https://audio.null.dangerthirdrail.com/empty_page.mp3
