@@ -73,9 +73,14 @@ Each song `.md` has YAML frontmatter:
 | `tags` | string[] | Genre/mood tags |
 | `versions` | array | Multiple takes or styles; see below |
 | `lyric` | string (optional) | Quoted lyric excerpt |
+| `fullLyrics` | string (optional) | Full lyrics shared by all versions; enables the lower-right “full lyrics” tab |
 | `cover` | enum | `pressure`, `server`, `island`, `trackpad`, `found`, `waveform`, `vinyl`, `circuit`, `constellation`, or `prism` |
 
 The markdown body is the song's description.
+
+Use the **Full lyrics** multiline field in Keystatic, or a YAML block scalar (`fullLyrics: |`) in frontmatter. Line breaks and blank lines are preserved as plain text. Empty or whitespace-only values hide the tab. Opening or closing it leaves the current version and playback untouched.
+
+The Keystatic **Full lyrics** input is 80 lines tall and scrolls internally, so adding new lines does not grow the form or shift the editor page.
 
 Each item in `versions` supports:
 

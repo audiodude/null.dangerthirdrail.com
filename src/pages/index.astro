@@ -34,6 +34,7 @@ const lockupData: SongData[] = sorted.map((entry) => ({
   })),
   description: marked.parse((entry.body ?? '').trim(), { async: false }) as string,
   lyric: entry.data.lyric,
+  fullLyrics: entry.data.fullLyrics,
   cover: entry.data.cover,
 }));
 ---

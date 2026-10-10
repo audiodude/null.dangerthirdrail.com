@@ -20,6 +20,7 @@
     "@astrojs/react": "^4.4.2",
     "@keystatic/astro": "^5.0.6",
     "@keystatic/core": "^0.5.50",
+    "@keystar/ui": "^0.7.21",
     "@markdoc/markdoc": "^0.5.7",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

@@ -32,6 +32,7 @@ export interface SongData {
   versions: SongVersion[];
   description: string;
   lyric?: string;
+  fullLyrics?: string;
   cover: CoverKey;
 }
 
@@ -537,10 +538,12 @@ export default function SongLockup({ song }: { song: SongData }) {
   const hasVersions = versions.length > 0;
   const showTabs = versions.length > 1;
 
+  const hasFullLyrics = Boolean(song.fullLyrics?.trim());
   const [activeIdx, setActiveIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [lyricsOpen, setLyricsOpen] = useState(false);
   // Per-version playhead memory.
   const versionTimesRef = useRef<Record<number, number>>({});
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -960,6 +963,51 @@ export default function SongLockup({ song }: { song: SongData }) {
           onSeek={onSeek}
           onHighlight={onHighlight}
         />
+
+        {hasFullLyrics && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                aria-expanded={lyricsOpen}
+                aria-controls={`${song.id}-full-lyrics`}
+                onClick={() => setLyricsOpen((open) => !open)}
+                style={{
+                  padding: '7px 16px',
+                  border: 'none',
+                  borderRadius: lyricsOpen ? '8px 8px 0 0' : 8,
+                  background: lyricsOpen ? accent : '#374151',
+                  color: lyricsOpen ? '#fff' : '#d1d5db',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  transition: 'background 160ms ease, color 160ms ease',
+                }}
+              >
+                full lyrics
+              </button>
+            </div>
+            <div
+              id={`${song.id}-full-lyrics`}
+              role="region"
+              aria-label={`${song.title} full lyrics`}
+              hidden={!lyricsOpen}
+              style={{
+                borderTop: `4px solid ${accent}`,
+                margin: '0 -20px',
+                padding: '16px 20px 4px',
+                color: '#d1d5db',
+                fontSize: 15,
+                lineHeight: 1.65,
+                whiteSpace: 'pre-wrap',
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {song.fullLyrics}
+            </div>
+          </div>
+        )}
 
         {hasVersions && (
           <audio key={activeIdx} ref={audioRef} src={active.audio} preload="metadata" />

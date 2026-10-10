@@ -1,4 +1,6 @@
 import { config, fields, collection } from '@keystatic/core';
+import { TextArea } from '@keystar/ui/text-field';
+import { createElement } from 'react';
 
 export default config({
   storage: { kind: 'local' },
@@ -84,6 +86,23 @@ export default config({
           label: 'Lyric excerpt',
           multiline: true,
         }),
+        fullLyrics: {
+          ...fields.text({ label: 'Full lyrics', multiline: true }),
+          Input: ({ value, onChange }) => createElement(TextArea, {
+            label: 'Full lyrics',
+            description: 'Shared by all versions; shows a full lyrics tab when filled in.',
+            value,
+            onChange,
+            height: 'auto',
+            inputWrapperProps: {
+              style: {
+                height: 'calc(80lh + var(--kui-size-space-regular) * 2)',
+                fontSize: 'var(--kui-typography-text-regular-size)',
+                lineHeight: 'var(--kui-typography-lineheight-medium)',
+              },
+            },
+          }),
+        },
         cover: fields.select({
           label: 'Cover art',
           options: [

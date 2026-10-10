@@ -169,6 +169,9 @@ importers:
       '@astrojs/react':
         specifier: ^4.4.2
         version: 4.4.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(supports-color@8.1.1)
+      '@keystar/ui':
+        specifier: ^0.7.21
+        version: 0.7.22(@react-spectrum/provider@3.11.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(supports-color@8.1.1)
       '@keystatic/astro':
         specifier: ^5.0.6
         version: 5.2.0(@keystatic/core@0.5.51(@react-spectrum/provider@3.11.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(supports-color@8.1.1))(astro@5.18.2(idb-keyval@6.3.0)(rollup@4.63.4)(supports-color@8.1.1)(typescript@5.9.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
