@@ -1,3 +1,15 @@
+// Songs are `client:visible` islands: they hydrate only after scrolling into
+// view, and clicks before then hit inert server HTML. Astro removes the
+// island's `ssr` attribute once hydration finishes.
+function hydrated(id: string) {
+  cy.get(`#${id}`).scrollIntoView().closest('astro-island').should('not.have.attr', 'ssr');
+}
+
+function play(id: string) {
+  hydrated(id);
+  cy.get(`#${id} button[aria-label="Play"]`).first().click();
+}
+
 describe('SongLockup', () => {
   beforeEach(() => {
     cy.visit('/');
@@ -19,7 +31,7 @@ describe('SongLockup', () => {
   });
 
   it('clicking play starts playback', () => {
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel audio').should(($audio) => {
       expect(($audio[0] as HTMLAudioElement).paused).to.be.false;
     });
@@ -27,7 +39,7 @@ describe('SongLockup', () => {
   });
 
   it('clicking pause stops playback', () => {
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').first().click();
     cy.get('#salsa-shekel audio').should(($audio) => {
       expect(($audio[0] as HTMLAudioElement).paused).to.be.true;
@@ -35,10 +47,10 @@ describe('SongLockup', () => {
   });
 
   it('only one song plays at a time', () => {
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
 
-    cy.get('#skin button[aria-label="Play"]').first().click();
+    play('skin');
     cy.get('#skin button[aria-label="Pause"]').should('exist');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('not.exist');
   });
@@ -47,6 +59,7 @@ describe('SongLockup', () => {
 describe('Version tabs', () => {
   it('switching tabs changes the active version', () => {
     cy.visit('/');
+    hydrated('salsa-shekel');
     cy.get('#salsa-shekel a').contains('Full Thing').click();
     cy.location('hash').should('contain', 'Full%20Thing');
     cy.get('#salsa-shekel a').contains('Full Thing')
@@ -56,7 +69,7 @@ describe('Version tabs', () => {
 
   it('switching tabs while playing continues playback', () => {
     cy.visit('/');
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
 
     cy.get('#salsa-shekel a').contains('Full Thing').click();
@@ -117,7 +130,7 @@ describe('Fragment URLs', () => {
 describe('Space bar', () => {
   it('pauses the playing song', () => {
     cy.visit('/');
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
 
     cy.get('body').type(' ');
@@ -129,7 +142,7 @@ describe('Space bar', () => {
 
   it('writes fragment with version on pause', () => {
     cy.visit('/');
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
 
     cy.get('body').type(' ');
@@ -138,7 +151,7 @@ describe('Space bar', () => {
 
   it('resumes playback from fragment', () => {
     cy.visit('/');
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
 
     cy.get('body').type(' ');
@@ -150,7 +163,7 @@ describe('Space bar', () => {
 
   it('does not start a different song while one is playing', () => {
     cy.visit('/');
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
 
     cy.get('body').type(' ');
@@ -162,7 +175,7 @@ describe('Space bar', () => {
 describe('Seek fragment updates', () => {
   it('clicking the progress bar writes ?t=N to the fragment', () => {
     cy.visit('/');
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
     cy.get('#salsa-shekel audio', { timeout: 5000 }).should(($audio) => {
       expect(($audio[0] as HTMLAudioElement).duration).to.be.at.least(5);
@@ -185,7 +198,7 @@ describe('Seek fragment updates', () => {
 describe('Highlights', () => {
   beforeEach(() => {
     cy.visit('/#salsa-shekel/version/Full%20Thing');
-    cy.get('#salsa-shekel audio', { timeout: 5000 });
+    hydrated('salsa-shekel');
   });
 
   it('renders highlight chips for versions with highlights', () => {
@@ -255,7 +268,7 @@ describe('Description markdown', () => {
 describe('Progress bar', () => {
   it('shows playhead dot when playing', () => {
     cy.visit('/');
-    cy.get('#salsa-shekel button[aria-label="Play"]').first().click();
+    play('salsa-shekel');
     cy.get('#salsa-shekel button[aria-label="Pause"]').should('exist');
 
     cy.wait(500);

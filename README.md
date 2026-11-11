@@ -6,7 +6,7 @@ Built with [Astro](https://astro.build) + React islands. Audio hosted on Cloudfl
 
 ## Setup
 
-Requires Node >= 22.12 (pinned in `.tool-versions`).
+Requires Node 24 (pinned in `.tool-versions`; Astro 7 needs >= 22.23.4).
 
 ```sh
 npm install
@@ -102,11 +102,11 @@ npm run dev
 npm test
 ```
 
-Use `npm run test:open` for interactive Cypress. The tests load audio from the public R2 hostname and therefore require network access.
+Use `npm run test:open` for interactive Cypress. The tests load audio from the public R2 hostname and therefore require network access. Playback is muted: the npm scripts pass `--mute-audio` to Cypress's default Electron browser via `ELECTRON_EXTRA_LAUNCH_ARGS`, and `cypress.config.ts` mutes Chrome and Firefox. Running `npx cypress run` directly skips the Electron mute.
 
 ## Deploying
 
-Pushes to `main` trigger `.github/workflows/deploy.yml`. GitHub Actions installs with Node 22, builds with `NODE_ENV=production`, and deploys only `dist/` to the Cloudflare Pages project `null-rail` via Wrangler. The repository must provide `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub Actions secrets.
+Pushes to `main` trigger `.github/workflows/deploy.yml`. GitHub Actions installs with the Node version from `.tool-versions`, builds with `NODE_ENV=production`, and deploys only `dist/` to the Cloudflare Pages project `null-rail` via Wrangler. The repository must provide `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub Actions secrets.
 
 ## Project structure
 

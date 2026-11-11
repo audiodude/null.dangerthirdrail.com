@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.23.4"
   },
   "scripts": {
     "dev": "astro dev",
@@ -13,18 +13,18 @@
     "sync-audio": "node scripts/sync-audio.mjs",
     "clear-cache": "node scripts/clear-cache.mjs",
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
-    "test": "cypress run",
-    "test:open": "cypress open"
+    "test": "ELECTRON_EXTRA_LAUNCH_ARGS=--mute-audio cypress run",
+    "test:open": "ELECTRON_EXTRA_LAUNCH_ARGS=--mute-audio cypress open"
   },
   "dependencies": {
-    "@astrojs/react": "^4.4.2",
-    "@keystatic/astro": "^5.0.6",
-    "@keystatic/core": "^0.5.50",
-    "@keystar/ui": "^0.7.21",
+    "@astrojs/react": "^7.1.7",
+    "@keystar/ui": "^0.10.0",
+    "@keystatic/astro": "^6.0.0",
+    "@keystatic/core": "^0.6.9",
     "@markdoc/markdoc": "^0.5.7",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "astro": "^5.18.1",
+    "astro": "^7.4.10",
     "marked": "^18.0.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
